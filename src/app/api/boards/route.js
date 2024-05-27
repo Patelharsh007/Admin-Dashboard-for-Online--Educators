@@ -3,15 +3,28 @@
 import { pool } from "../../../config/db";
 import { NextResponse } from "next/server";
 
+// export async function GET() {
+//     try {
+//         const results = await pool.query("SELECT * FROM boardmasters");
+//         return NextResponse.json(results);
+//     } catch (error) {
+//         console.error("Error in GET /api/boards:", error);
+//         return NextResponse.json({ message: error.message }, { status: 500 });
+//     }
+// }
+
+// src/app/api/boards/route.js
+
 export async function GET() {
     try {
-        const results = await pool.query("SELECT * FROM boardmasters");
+        const results = await pool.query("SELECT id, name FROM boardmasters");
         return NextResponse.json(results);
     } catch (error) {
         console.error("Error in GET /api/boards:", error);
         return NextResponse.json({ message: error.message }, { status: 500 });
     }
 }
+
 
 export async function POST(req) {
     try {

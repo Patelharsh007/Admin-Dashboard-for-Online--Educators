@@ -18,6 +18,18 @@ export async function PUT(req, { params }) {
     }
 }
 
+export async function GET(req, { params }) {
+    try {
+        const { id } = params;
+
+        const results=await pool.query("SELECT * from mediummasters WHERE parentref = ?",[id]);
+        return NextResponse.json(results);
+    } catch (error) {
+        console.error("Error in GET /api/mediums/[id]:", error);
+        return NextResponse.json({ message: error.message }, { status: 500 });
+    }
+}
+
 export async function DELETE(req, { params }) {
     try {
         const { id } = params;

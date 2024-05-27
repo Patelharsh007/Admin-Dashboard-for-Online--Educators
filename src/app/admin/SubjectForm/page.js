@@ -6,8 +6,8 @@ import { FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
 function SubjectForm({ reloadKey, onSubjectChange }) {
     const [subjects, setSubjects] = useState([]);
     const [standards, setStandards] = useState([]);
+    const [mediums, setMediums] = useState([]);
     const [name, setName] = useState('');
-    const [standardId, setStandardId] = useState('');
     const [notification, setNotification] = useState('');
     const [isEditAllModalOpen, setIsEditAllModalOpen] = useState(false);
     const [editableSubjects, setEditableSubjects] = useState([]);
@@ -15,11 +15,62 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [sortBy, setSortBy] = useState({ field: 'id', order: 'asc' });
+    const [standardId, setStandardId] = useState("");
+    const [mediumId, setMediumId] = useState("");
+    const [boardId, setBoardId] = useState("");
+    const [boards, setBoards] = useState([]);
 
     useEffect(() => {
         loadSubjects();
-        loadStandards();
+        loadBoards();
     }, [reloadKey]);
+
+    useEffect(() => {
+        loadStandards(mediumId);
+      }, [mediumId]);
+    
+      useEffect(() => {
+        loadMediums(boardId);
+      }, [boardId]);
+
+      async function loadBoards() {
+        try {
+          const response = await axios.get("/api/boards");
+          setBoards(response.data);
+        } catch (error) {
+          console.error("Error loading boards:", error);
+        }
+      }
+    
+      async function loadStandards(mediumId) {
+        try {
+          if (mediumId) {
+            const response = await axios.get(`/api/standards/${mediumId}`);
+            setStandards(response.data);
+          } else {
+            setStandards([]);
+          }
+        } catch (error) {
+          console.error("Error loading standards:", error);
+        }
+      }
+    
+    
+      // Update the loadMediums function to accept a boardId parameter
+    async function loadMediums(boardId) {
+      try {
+        if (boardId) {
+          const response = await axios.get(`/api/mediums/${boardId}`);
+          setMediums(response.data);
+        } else {
+          setMediums([]);
+        }
+      } catch (error) {
+        console.error("Error loading mediums:", error);
+      }
+    }
+    
+    
 
     async function loadSubjects() {
         try {
@@ -30,14 +81,6 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
         }
     }
 
-    async function loadStandards() {
-        try {
-            const response = await axios.get('/api/standards');
-            setStandards(response.data);
-        } catch (error) {
-            console.error("Error loading standards:", error);
-        }
-    }
 
     async function addSubject() {
         try {
@@ -175,17 +218,42 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                     className="flex-1 p-2 border border-gray-300 rounded mr-2"
                 />
                 <select
-                    value={standardId}
-                    onChange={(e) => setStandardId(e.target.value)}
-                    className="flex-1 p-2 border border-gray-300 rounded mr-2"
-                >
-                    <option value="">Select standard</option>
-                    {standards.map((standard) => (
-                        <option key={standard.id} value={standard.id}>
-                            {standard.name}
-                        </option>
-                    ))}
-                </select>
+          value={boardId}
+          onChange={(e) => setBoardId(e.target.value)}
+          className="flex-1 p-2 border border-gray-300 rounded mr-2"
+        >
+          <option value="">Select board</option>
+          {boards.map((board) => (
+            <option key={board.id} value={board.id}>
+              {board.name}
+            </option>
+          ))}
+        </select>
+        
+        <select
+          value={mediumId}
+          onChange={(e) => setMediumId(e.target.value)}
+          className="flex-1 p-2 border border-gray-300 rounded mr-2"
+        >
+          <option value="">Select medium</option>
+          {mediums.map((medium) => (
+            <option key={medium.id} value={medium.id}>
+              {medium.name}
+            </option>
+          ))}
+        </select>
+        <select
+          value={standardId}
+          onChange={(e) => setStandardId(e.target.value)}
+          className="flex-1 p-2 border border-gray-300 rounded mr-2"
+        >
+          <option value="">Select standard</option>
+          {standards.map((standard) => (
+            <option key={standard.id} value={standard.id}>
+              {standard.name}
+            </option>
+          ))}
+        </select>
                 <button
                     onClick={addSubject}
                     className="p-2 bg-blue-500 text-white rounded"

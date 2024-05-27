@@ -6,8 +6,14 @@ import { FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
 function ChapterForm({ reloadKey }) {
   const [chapters, setChapters] = useState([]);
   const [subjects, setSubjects] = useState([]);
+  const [standards, setStandards] = useState([]);
+  const [mediums, setMediums] = useState([]);
+  const [boards, setBoards] = useState([]);
   const [name, setName] = useState("");
   const [subjectId, setSubjectId] = useState("");
+  const [standardId, setStandardId] = useState("");
+  const [mediumId, setMediumId] = useState("");
+  const [boardId, setBoardId] = useState("");
   const [notification, setNotification] = useState("");
   const [isEditAllModalOpen, setIsEditAllModalOpen] = useState(false);
   const [editableChapters, setEditableChapters] = useState([]);
@@ -18,8 +24,20 @@ function ChapterForm({ reloadKey }) {
 
   useEffect(() => {
     loadChapters();
-    loadSubjects();
+    loadBoards();
   }, [reloadKey]);
+
+  useEffect(() => {
+    loadStandards(mediumId);
+  }, [mediumId]);
+
+  useEffect(() => {
+    loadMediums(boardId);
+  }, [boardId]);
+
+  useEffect(() => {
+    loadSubjects(standardId);
+  }, [standardId]);
 
   async function loadChapters() {
     try {
@@ -30,10 +48,54 @@ function ChapterForm({ reloadKey }) {
     }
   }
 
-  async function loadSubjects() {
+  async function loadBoards() {
     try {
-      const response = await axios.get("/api/subjects");
-      setSubjects(response.data);
+      const response = await axios.get("/api/boards");
+      setBoards(response.data);
+    } catch (error) {
+      console.error("Error loading boards:", error);
+    }
+  }
+
+  async function loadStandards(mediumId) {
+    try {
+      if (mediumId) {
+        const response = await axios.get(`/api/standards/${mediumId}`);
+        setStandards(response.data);
+      } else {
+        setStandards([]);
+      }
+    } catch (error) {
+      console.error("Error loading standards:", error);
+    }
+  }
+
+
+  // Update the loadMediums function to accept a boardId parameter
+async function loadMediums(boardId) {
+  try {
+    if (boardId) {
+      const response = await axios.get(`/api/mediums/${boardId}`);
+      setMediums(response.data);
+    } else {
+      setMediums([]);
+    }
+  } catch (error) {
+    console.error("Error loading mediums:", error);
+  }
+}
+
+
+
+
+  async function loadSubjects(standardId) {
+    try {
+      if (standardId) {
+        const response = await axios.get(`/api/subjects/${standardId}`);
+        setSubjects(response.data);
+      } else {
+        setSubjects([]);
+      }
     } catch (error) {
       console.error("Error loading subjects:", error);
     }
@@ -183,6 +245,43 @@ function ChapterForm({ reloadKey }) {
           className="flex-1 p-2 border border-gray-300 rounded mr-2"
         />
         <select
+          value={boardId}
+          onChange={(e) => setBoardId(e.target.value)}
+          className="flex-1 p-2 border border-gray-300 rounded mr-2"
+        >
+          <option value="">Select board</option>
+          {boards.map((board) => (
+            <option key={board.id} value={board.id}>
+              {board.name}
+            </option>
+          ))}
+        </select>
+        
+        <select
+          value={mediumId}
+          onChange={(e) => setMediumId(e.target.value)}
+          className="flex-1 p-2 border border-gray-300 rounded mr-2"
+        >
+          <option value="">Select medium</option>
+          {mediums.map((medium) => (
+            <option key={medium.id} value={medium.id}>
+              {medium.name}
+            </option>
+          ))}
+        </select>
+        <select
+          value={standardId}
+          onChange={(e) => setStandardId(e.target.value)}
+          className="flex-1 p-2 border border-gray-300 rounded mr-2"
+        >
+          <option value="">Select standard</option>
+          {standards.map((standard) => (
+            <option key={standard.id} value={standard.id}>
+              {standard.name}
+            </option>
+          ))}
+        </select>
+        <select
           value={subjectId}
           onChange={(e) => setSubjectId(e.target.value)}
           className="flex-1 p-2 border border-gray-300 rounded mr-2"
@@ -198,11 +297,11 @@ function ChapterForm({ reloadKey }) {
           onClick={addChapter}
           className="p-2 bg-blue-500 text-white rounded"
         >
-          Add Chapter
+          Add
         </button>
       </div>
       {notification && (
-        <div className="mb-4 p-2 bg-green-200 text-green-800 rounded">
+        <div className="p-2 bg-green-100 text-green-800 rounded mb-4">
           {notification}
         </div>
       )}
@@ -273,6 +372,60 @@ function ChapterForm({ reloadKey }) {
           </tbody>
         </table>
       </div>
+      {/* <table className="min-w-full bg-white">
+        <thead>
+          <tr>
+            <th
+              onClick={() => handleSort("chapterId")}
+              className="py-2 px-4 border-b border-gray-300 cursor-pointer"
+            >
+              ID
+              {sortBy.field === "chapterId" &&
+                (sortBy.order === "asc" ? <FaSortUp /> : <FaSortDown />)}
+            </th>
+            <th
+              onClick={() => handleSort("chapterName")}
+              className="py-2 px-4 border-b border-gray-300 cursor-pointer"
+            >
+              Chapter Name
+              {sortBy.field === "chapterName" &&
+                (sortBy.order === "asc" ? <FaSortUp /> : <FaSortDown />)}
+            </th>
+            <th
+              onClick={() => handleSort("subjectName")}
+              className="py-2 px-4 border-b border-gray-300 cursor-pointer"
+            >
+              Subject Name
+              {sortBy.field === "subjectName" &&
+                (sortBy.order === "asc" ? <FaSortUp /> : <FaSortDown />)}
+            </th>
+            <th className="py-2 px-4 border-b border-gray-300">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {chapters.map((chapter) => (
+            <tr key={chapter.chapterId}>
+              <td className="py-2 px-4 border-b border-gray-300">{chapter.chapterId}</td>
+              <td className="py-2 px-4 border-b border-gray-300">{chapter.chapterName}</td>
+              <td className="py-2 px-4 border-b border-gray-300">{chapter.subjectName}</td>
+              <td className="py-2 px-4 border-b border-gray-300">
+                <button
+                  onClick={() => handleUpdateModal(chapter)}
+                  className="mr-2 p-1 bg-yellow-500 text-white rounded"
+                >
+                  Update
+                </button>
+                <button
+                  onClick={() => handleDeleteModal(chapter)}
+                  className="p-1 bg-red-500 text-white rounded"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table> */}
       {isUpdateModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
@@ -312,8 +465,10 @@ function ChapterForm({ reloadKey }) {
             </div>
             <div className="flex justify-between mt-4">
               <button
-                onClick={() => {setIsUpdateModalOpen(false);
-                  showNotification('Update request canceled')}
+                onClick={() => {
+                  setIsUpdateModalOpen(false);
+                  showNotification('Update request canceled')
+                }
                 }
                 className="p-2 bg-gray-400 text-white rounded mr-2"
               >
@@ -352,8 +507,10 @@ function ChapterForm({ reloadKey }) {
             </p>
             <div className="flex justify-between mt-4">
               <button
-                onClick={() => {setIsDeleteModalOpen(false);
-                  showNotification('Delete request canceled')}
+                onClick={() => {
+                  setIsDeleteModalOpen(false);
+                  showNotification('Delete request canceled')
+                }
                 }
                 className="p-2 bg-gray-400 text-white rounded mr-2"
               >
@@ -443,8 +600,10 @@ function ChapterForm({ reloadKey }) {
             </table>
             <div className="flex justify-between mt-4">
               <button
-                onClick={() =>{ setIsEditAllModalOpen(false);
-                  showNotification('Edit request canceled')}
+                onClick={() => {
+                  setIsEditAllModalOpen(false);
+                  showNotification('Edit request canceled')
+                }
                 }
                 className="p-2 bg-gray-400 text-white rounded mr-2"
               >

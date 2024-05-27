@@ -53,7 +53,7 @@ function AdminPage() {
   return (
     <div className="bg-gray-100 min-h-screen">
       <Navbar />
-      <div className="container mx-auto my-20 p-4 bg-white shadow-md rounded-lg max-w-4xl">
+      <div className="container mx-auto my-20 p-4 bg-white shadow-md rounded-lg max-w-7xl">
 
         <Topbar onFormChange={handleFormChange} />
         <div className="p-4">

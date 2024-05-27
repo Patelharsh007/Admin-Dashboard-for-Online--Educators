@@ -1,6 +1,17 @@
 import { pool } from "../../../../config/db";
 import { NextResponse } from "next/server";
 
+export async function GET(req, { params }) {
+    try {
+        const { id } = params;
+        const results=await pool.query("SELECT * from subjectmasters WHERE parentref = ?",[id]);
+        return NextResponse.json(results);
+    } catch (error) {
+        console.error("Error in GET /api/subjects/[id]:", error);
+        return NextResponse.json({ message: error.message }, { status: 500 });
+    }
+}
+
 export async function PUT(req, { params }) {
     try {
         const { id } = params;

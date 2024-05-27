@@ -19,13 +19,18 @@ function StandardForm({ reloadKey, onStandardChange }) {
     const [isEditAllModalOpen, setIsEditAllModalOpen] = useState(false);
     const [editableStandards, setEditableStandards] = useState([]);
     const [currentBoardName, setCurrentBoardName] = useState('');
+    const [boardId, setBoardId] = useState("");
+
 
     useEffect(() => {
         loadStandards();
-        loadMediums();
         loadBoards();
     }, [reloadKey]); // Reload when reloadKey changes
 
+    useEffect(() => {
+        loadMediums(boardId);
+    }, [boardId]);
+    
     async function loadStandards() {
         try {
             const response = await axios.get('/api/standards');
@@ -35,21 +40,27 @@ function StandardForm({ reloadKey, onStandardChange }) {
         }
     }
 
-    async function loadMediums() {
-        try {
-            const response = await axios.get('/api/mediums');
-            setMediums(response.data);
-        } catch (error) {
-            console.error("Error loading mediums:", error);
-        }
-    }
 
     async function loadBoards() {
         try {
-            const response = await axios.get('/api/boards');
+            const response = await axios.get("/api/boards");
             setBoards(response.data);
         } catch (error) {
             console.error("Error loading boards:", error);
+        }
+    }
+
+
+    async function loadMediums(boardId) {
+        try {
+            if (boardId) {
+                const response = await axios.get(`/api/mediums/${boardId}`);
+                setMediums(response.data);
+            } else {
+                setMediums([]);
+            }
+        } catch (error) {
+            console.error("Error loading mediums:", error);
         }
     }
 
@@ -139,8 +150,8 @@ function StandardForm({ reloadKey, onStandardChange }) {
         });
         setStandards(sortedStandards);
     }
-    
-    
+
+
 
     function handleUpdateStandard() {
         updateStandard(currentStandardId, currentStandardName, currentMediumId);
@@ -214,6 +225,19 @@ function StandardForm({ reloadKey, onStandardChange }) {
                     placeholder="Add new standard"
                     className="flex-1 p-2 border border-gray-300 rounded mr-2"
                 />
+                <select
+                    value={boardId}
+                    onChange={(e) => setBoardId(e.target.value)}
+                    className="flex-1 p-2 border border-gray-300 rounded mr-2"
+                >
+                    <option value="">Select board</option>
+                    {boards.map((board) => (
+                        <option key={board.id} value={board.id}>
+                            {board.name}
+                        </option>
+                    ))}
+                </select>
+
                 <select
                     value={mediumId}
                     onChange={(e) => setMediumId(e.target.value)}
@@ -295,49 +319,51 @@ function StandardForm({ reloadKey, onStandardChange }) {
 
             {/* Update Modal */}
             {isUpdateModalOpen && (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-        <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
-            <h3 className="text-xl font-semibold mb-4">Update Standard</h3>
-            <input
-                type="text"
-                value={currentStandardName}
-                onChange={(e) => setCurrentStandardName(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded mb-4"
-                placeholder="Standard Name"
-            />
-            <select
-                value={currentMediumId}
-                onChange={(e) => setCurrentMediumId(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded mb-4"
-            >
-                <option value="">Select Medium</option>
-                {mediums.map((medium) => (
-                    <option key={medium.id} value={medium.id}>
-                        {medium.name}
-                    </option>
-                ))}
-            </select>
-            <div className="mb-4">
-                <p>Board Name: {currentBoardName}</p>
-            </div>
-            <div className="flex justify-between mt-4">
-                <button
-                    onClick={() => { setIsUpdateModalOpen(false); 
-                        showNotification("Update Request Cancelled"); }}
-                    className="p-2 bg-gray-400 text-white rounded mr-2"
-                >
-                    Cancel
-                </button>
-                <button
-                    onClick={handleUpdateStandard}
-                    className="p-2 bg-yellow-500 text-white rounded"
-                >
-                    Update
-                </button>
-            </div>
-        </div>
-    </div>
-)}
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
+                        <h3 className="text-xl font-semibold mb-4">Update Standard</h3>
+                        <input
+                            type="text"
+                            value={currentStandardName}
+                            onChange={(e) => setCurrentStandardName(e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded mb-4"
+                            placeholder="Standard Name"
+                        />
+                        <select
+                            value={currentMediumId}
+                            onChange={(e) => setCurrentMediumId(e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded mb-4"
+                        >
+                            <option value="">Select Medium</option>
+                            {mediums.map((medium) => (
+                                <option key={medium.id} value={medium.id}>
+                                    {medium.name}
+                                </option>
+                            ))}
+                        </select>
+                        <div className="mb-4">
+                            <p>Board Name: {currentBoardName}</p>
+                        </div>
+                        <div className="flex justify-between mt-4">
+                            <button
+                                onClick={() => {
+                                    setIsUpdateModalOpen(false);
+                                    showNotification("Update Request Cancelled");
+                                }}
+                                className="p-2 bg-gray-400 text-white rounded mr-2"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleUpdateStandard}
+                                className="p-2 bg-yellow-500 text-white rounded"
+                            >
+                                Update
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Delete Modal */}
             {isDeleteModalOpen && (
@@ -347,8 +373,10 @@ function StandardForm({ reloadKey, onStandardChange }) {
                         <p>Are you sure you want to delete this standard?</p>
                         <div className="flex justify-between mt-4">
                             <button
-                                onClick={() => {setIsDeleteModalOpen(false); 
-                                    showNotification("Delete request canceled");}}
+                                onClick={() => {
+                                    setIsDeleteModalOpen(false);
+                                    showNotification("Delete request canceled");
+                                }}
                                 className="p-2 bg-gray-400 text-white rounded mr-2"
                             >
                                 Cancel
