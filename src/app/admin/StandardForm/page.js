@@ -14,6 +14,7 @@ function StandardForm({ reloadKey, onStandardChange }) {
     const [currentStandardId, setCurrentStandardId] = useState('');
     const [currentStandardName, setCurrentStandardName] = useState('');
     const [currentMediumId, setCurrentMediumId] = useState('');
+    const[currentMediumName, setCurrentMediumName] = useState('');
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [currentStandardToDelete, setCurrentStandardToDelete] = useState(null);
     const [isEditAllModalOpen, setIsEditAllModalOpen] = useState(false);
@@ -75,6 +76,7 @@ function StandardForm({ reloadKey, onStandardChange }) {
             setMediumId('');
             onStandardChange(); // Trigger reload
             showNotification('Standard added successfully');
+            setMediums([]);
         } catch (error) {
             console.error("Error adding standard:", error);
             showNotification('Error adding standard');
@@ -295,6 +297,7 @@ function StandardForm({ reloadKey, onStandardChange }) {
                                         setCurrentStandardId(standard.id);
                                         setCurrentStandardName(standard.name);
                                         setCurrentMediumId(standard.parentref);
+                                        setCurrentMediumName(standard.mediumName);
                                         setCurrentBoardName(standard.boardName);
                                         setIsUpdateModalOpen(true);
                                     }}
@@ -321,7 +324,16 @@ function StandardForm({ reloadKey, onStandardChange }) {
             {isUpdateModalOpen && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
                     <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
+                        
+                    <div className="mb-4">
+                            <p className="text-lg font-semibold mb-4">Current Details:</p>
+                            <p>Standard: {currentStandardName}</p>
+                            <p>Medium Name: {currentMediumName}</p>
+                            <p>Board Name: {currentBoardName}</p>
+                        </div>
                         <h3 className="text-xl font-semibold mb-4">Update Standard</h3>
+
+                        <h5 className="text-lg font-semibold mb-4">Standard Name:</h5>
                         <input
                             type="text"
                             value={currentStandardName}
@@ -329,7 +341,28 @@ function StandardForm({ reloadKey, onStandardChange }) {
                             className="w-full p-2 border border-gray-300 rounded mb-4"
                             placeholder="Standard Name"
                         />
-                        <select
+                        
+                        <div className="mb-4">
+
+                            <h5 className="text-lg font-semibold mb-4">Select Board:</h5>
+                            <select
+                                value={boardId}
+                                onChange={(e) => setBoardId(e.target.value)}
+                                className="flex-1 p-2 border border-gray-300 rounded mr-2"
+                            >
+                                <option value="">Select Board</option>
+                                {boards.map((board) => (
+                                    <option key={board.id} value={board.id}>
+                                        {board.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <br />
+                            <br />
+
+
+                            <h5 className="text-lg font-semibold mb-4">Select Medium:</h5>
+                            <select
                             value={currentMediumId}
                             onChange={(e) => setCurrentMediumId(e.target.value)}
                             className="w-full p-2 border border-gray-300 rounded mb-4"
@@ -341,9 +374,9 @@ function StandardForm({ reloadKey, onStandardChange }) {
                                 </option>
                             ))}
                         </select>
-                        <div className="mb-4">
-                            <p>Board Name: {currentBoardName}</p>
+                            
                         </div>
+                        
                         <div className="flex justify-between mt-4">
                             <button
                                 onClick={() => {

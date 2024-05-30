@@ -15,6 +15,7 @@ function MediumForm({ reloadKey, onMediumChange }) {
     const [currentMediumBoardId, setCurrentMediumBoardId] = useState('');
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [currentMediumToDelete, setCurrentMediumToDelete] = useState(null);
+    const [currentBoardName, setCurrentBoardName] = useState('');
 
 
     const [currentBoardId, setCurrentBoardId] = useState('');
@@ -242,6 +243,7 @@ function MediumForm({ reloadKey, onMediumChange }) {
                                         setCurrentMediumId(medium.id);
                                         setCurrentMediumName(medium.name);
                                         setCurrentMediumBoardId(medium.parentref);
+                                        setCurrentBoardName(boards.find(board => board.id === medium.parentref)?.name || 'N/A');
                                         setIsUpdateModalOpen(true);
                                     }}
                                     className="p-1 bg-yellow-500 text-white rounded mr-2"
@@ -319,7 +321,8 @@ function MediumForm({ reloadKey, onMediumChange }) {
                         </table>
                         <div className="flex justify-between">
                             <button
-                                onClick={() => {setIsEditAllModalOpen(false);
+                                onClick={() => {
+                                    setIsEditAllModalOpen(false);
                                     showNotification('Edit request canceled');
                                 }}
                                 className="p-2 bg-gray-400 text-white rounded mr-2"
@@ -341,10 +344,18 @@ function MediumForm({ reloadKey, onMediumChange }) {
 
             {/* Update Medium Modal */}
             {isUpdateModalOpen && (
-                <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-gray-800 bg-opacity-75">
-                    <div className="bg-white p-6 rounded-lg">
-                        <h2 className="text-xl font-semibold mb-4">Update Medium</h2>
-                        <p className="mb-2">Medium ID: {currentMediumId}</p>
+
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
+
+                        <div className="mb-4">
+                            <p className="text-lg font-semibold mb-4">Current Details:</p>
+                            <p>Medium Name: {currentMediumName}</p>
+                            <p>Board Name: {currentBoardName}</p>
+                        </div>
+                        <h3 className="text-xl font-semibold mb-4">Update Medium</h3>
+
+                        <h5 className="text-lg font-semibold mb-4">Medium Name:</h5>
                         <input
                             type="text"
                             value={currentMediumName}
@@ -352,18 +363,25 @@ function MediumForm({ reloadKey, onMediumChange }) {
                             placeholder="Enter new medium name"
                             className="w-full p-2 border border-gray-300 rounded mb-4"
                         />
-                        <select
-                            value={currentMediumBoardId}
-                            onChange={(e) => setCurrentMediumBoardId(e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded mb-4"
-                        >
-                            {boards.map(board => (
-                                <option key={board.id} value={board.id}>
-                                    {board.name}
-                                </option>
-                            ))}
-                        </select>
-                        
+
+                        <div className="mb-4">
+
+                            <h5 className="text-lg font-semibold mb-4">Select Board:</h5>
+                            <select
+                                value={currentMediumBoardId}
+                                onChange={(e) => setCurrentMediumBoardId(e.target.value)}
+                                className="w-full p-2 border border-gray-300 rounded mb-4"
+                            >
+                                {boards.map(board => (
+                                    <option key={board.id} value={board.id}>
+                                        {board.name}
+                                    </option>
+                                ))}
+                            </select>
+
+
+                        </div>
+
                         <div className="flex justify-between mt-4">
                             <button
                                 onClick={() => {
@@ -383,8 +401,7 @@ function MediumForm({ reloadKey, onMediumChange }) {
                             </button>
                         </div>
                     </div>
-                </div>
-            )}
+                </div>)}
 
             {/* Delete Medium Modal */}
             {isDeleteModalOpen && (

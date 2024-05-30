@@ -72,18 +72,18 @@ function ChapterForm({ reloadKey }) {
 
 
   // Update the loadMediums function to accept a boardId parameter
-async function loadMediums(boardId) {
-  try {
-    if (boardId) {
-      const response = await axios.get(`/api/mediums/${boardId}`);
-      setMediums(response.data);
-    } else {
-      setMediums([]);
+  async function loadMediums(boardId) {
+    try {
+      if (boardId) {
+        const response = await axios.get(`/api/mediums/${boardId}`);
+        setMediums(response.data);
+      } else {
+        setMediums([]);
+      }
+    } catch (error) {
+      console.error("Error loading mediums:", error);
     }
-  } catch (error) {
-    console.error("Error loading mediums:", error);
   }
-}
 
 
 
@@ -113,6 +113,9 @@ async function loadMediums(boardId) {
       setSubjectId("");
       loadChapters();
       showNotification("Chapter added successfully");
+      setMediums([]);
+      setStandards([]);
+      setSubjects([]);  
     } catch (error) {
       console.error("Error adding chapter:", error);
       showNotification("Error adding chapter");
@@ -139,6 +142,7 @@ async function loadMediums(boardId) {
   }
 
   function handleEditAll() {
+    loadBoards();
     setEditableChapters(
       chapters.map((chapter) => ({
         ...chapter,
@@ -194,7 +198,7 @@ async function loadMediums(boardId) {
   }
 
   function handleUpdateModal(chapter) {
-    setCurrentChapter({
+      setCurrentChapter({
       ...chapter,
       newName: chapter.chapterName,
       newSubjectId: chapter.subjectId,
@@ -256,7 +260,7 @@ async function loadMediums(boardId) {
             </option>
           ))}
         </select>
-        
+
         <select
           value={mediumId}
           onChange={(e) => setMediumId(e.target.value)}
@@ -372,64 +376,24 @@ async function loadMediums(boardId) {
           </tbody>
         </table>
       </div>
-      {/* <table className="min-w-full bg-white">
-        <thead>
-          <tr>
-            <th
-              onClick={() => handleSort("chapterId")}
-              className="py-2 px-4 border-b border-gray-300 cursor-pointer"
-            >
-              ID
-              {sortBy.field === "chapterId" &&
-                (sortBy.order === "asc" ? <FaSortUp /> : <FaSortDown />)}
-            </th>
-            <th
-              onClick={() => handleSort("chapterName")}
-              className="py-2 px-4 border-b border-gray-300 cursor-pointer"
-            >
-              Chapter Name
-              {sortBy.field === "chapterName" &&
-                (sortBy.order === "asc" ? <FaSortUp /> : <FaSortDown />)}
-            </th>
-            <th
-              onClick={() => handleSort("subjectName")}
-              className="py-2 px-4 border-b border-gray-300 cursor-pointer"
-            >
-              Subject Name
-              {sortBy.field === "subjectName" &&
-                (sortBy.order === "asc" ? <FaSortUp /> : <FaSortDown />)}
-            </th>
-            <th className="py-2 px-4 border-b border-gray-300">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {chapters.map((chapter) => (
-            <tr key={chapter.chapterId}>
-              <td className="py-2 px-4 border-b border-gray-300">{chapter.chapterId}</td>
-              <td className="py-2 px-4 border-b border-gray-300">{chapter.chapterName}</td>
-              <td className="py-2 px-4 border-b border-gray-300">{chapter.subjectName}</td>
-              <td className="py-2 px-4 border-b border-gray-300">
-                <button
-                  onClick={() => handleUpdateModal(chapter)}
-                  className="mr-2 p-1 bg-yellow-500 text-white rounded"
-                >
-                  Update
-                </button>
-                <button
-                  onClick={() => handleDeleteModal(chapter)}
-                  className="p-1 bg-red-500 text-white rounded"
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table> */}
+
       {isUpdateModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
-            <h3 className="text-xl font-semibold mb-4">Update Chapter</h3>
+
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-md max-w-md">
+
+            <div className="mb-4">
+              <p className="text-lg font-semibold mb-4">Current Details:</p>
+              <p>Subject Name:{currentChapter.subjectName}</p>
+              <p>Standard: {currentChapter.standardName}</p>
+              <p>Medium Name: {currentChapter.mediumName}</p>
+              <p>Board Name: {currentChapter.boardName}</p>
+              <p>Standard Name: {currentChapter.standardName}</p>
+            </div>
+
+            <h3 className="text-xl font-semibold mb-4">Update Chapters</h3>
+
+            <h5 className="text-lg font-semibold mb-4">Chapter Name:</h5>
             <input
               type="text"
               value={currentChapter.newName}
@@ -441,36 +405,88 @@ async function loadMediums(boardId) {
               }
               className="mb-4 p-2 border border-gray-300 rounded w-full"
             />
-            <select
-              value={currentChapter.newSubjectId}
-              onChange={(e) =>
-                setCurrentChapter({
-                  ...currentChapter,
-                  newSubjectId: e.target.value,
-                })
-              }
-              className="mb-4 p-2 border border-gray-300 rounded w-full"
-            >
-              <option value="">Select subject</option>
-              {subjects.map((subject) => (
-                <option key={subject.id} value={subject.id}>
-                  {subject.name}
-                </option>
-              ))}
-            </select>
+
             <div className="mb-4">
-              <p>Standard Name: {currentChapter.standardName}</p>
-              <p>Medium Name: {currentChapter.mediumName}</p>
-              <p>Board Name: {currentChapter.boardName}</p>
+
+              <h5 className="text-lg font-semibold mb-4">Select Board:</h5>
+              <select
+                value={boardId}
+                onChange={(e) => setBoardId(e.target.value)}
+                className="flex-1 p-2 border border-gray-300 rounded mr-2"
+              >
+                <option value="">Select Board</option>
+                {boards.map((board) => (
+                  <option key={board.id} value={board.id}>
+                    {board.name}
+                  </option>
+                ))}
+              </select>
+              <br />
+              <br />
+
+
+              <h5 className="text-lg font-semibold mb-4">Select Medium:</h5>
+              <select
+                value={mediumId}
+                onChange={(e) => setMediumId(e.target.value)}
+                className="flex-1 p-2 border border-gray-300 rounded mr-2"
+              >
+                <option value="">Select Medium</option>
+                {mediums.map((medium) => (
+                  <option key={medium.id} value={medium.id}>
+                    {medium.name}
+                  </option>
+                ))}
+              </select>
+              <br />
+              <br />
+
+              <h5 className="text-lg font-semibold mb-4">Select Standard:</h5>
+              <select
+                value={standardId}
+                onChange={(e) => setStandardId(e.target.value)}
+                className="flex-1 p-2 border border-gray-300 rounded mr-2"
+              >
+                <option value="">Select standard</option>
+                {standards.map((standard) => (
+                  <option key={standard.id} value={standard.id}>
+                    {standard.name}
+                  </option>
+                ))}
+              </select>
+              <br />
+              <br />
+
+              <h5 className="text-lg font-semibold mb-4">Select Subject:</h5>
+              <select
+                value={currentChapter.newSubjectId}
+                onChange={(e) =>
+                  setCurrentChapter({
+                    ...currentChapter,
+                    newSubjectId: e.target.value,
+                  })
+                }
+                className="mb-4 p-2 border border-gray-300 rounded w-full"
+              >
+                <option value="">Select subject</option>
+                {subjects.map((subject) => (
+                  <option key={subject.id} value={subject.id}>
+                    {subject.name}
+                  </option>
+                ))}
+              </select>
+              <br />
+              <br />
+
             </div>
+
             <div className="flex justify-between mt-4">
               <button
                 onClick={() => {
                   setIsUpdateModalOpen(false);
-                  showNotification('Update request canceled')
-                }
-                }
-                className="p-2 bg-gray-400 text-white rounded mr-2"
+                  showNotification('Update request canceled');
+                }}
+                className="p-2 bg-gray-400 text-white rounded mr-2 focus:outline-none"
               >
                 Cancel
               </button>
@@ -489,7 +505,7 @@ async function loadMediums(boardId) {
                     showNotification("Error updating chapter");
                   }
                 }}
-                className="p-2 bg-blue-500 text-white rounded"
+                className="p-2 bg-blue-500 text-white rounded focus:outline-none"
               >
                 Update
               </button>
@@ -497,6 +513,8 @@ async function loadMediums(boardId) {
           </div>
         </div>
       )}
+
+
       {isDeleteModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">

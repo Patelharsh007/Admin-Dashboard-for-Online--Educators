@@ -20,6 +20,8 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
     const [boardId, setBoardId] = useState("");
     const [boards, setBoards] = useState([]);
 
+    
+
     useEffect(() => {
         loadSubjects();
         loadBoards();
@@ -27,50 +29,53 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
 
     useEffect(() => {
         loadStandards(mediumId);
-      }, [mediumId]);
-    
-      useEffect(() => {
-        loadMediums(boardId);
-      }, [boardId]);
+    }, [mediumId]);
 
-      async function loadBoards() {
+    useEffect(() => {
+        loadMediums(boardId);
+    }, [boardId]);
+
+    
+
+    async function loadBoards() {
         try {
-          const response = await axios.get("/api/boards");
-          setBoards(response.data);
+            const response = await axios.get("/api/boards");
+            setBoards(response.data);
         } catch (error) {
-          console.error("Error loading boards:", error);
+            console.error("Error loading boards:", error);
         }
-      }
-    
-      async function loadStandards(mediumId) {
-        try {
-          if (mediumId) {
-            const response = await axios.get(`/api/standards/${mediumId}`);
-            setStandards(response.data);
-          } else {
-            setStandards([]);
-          }
-        } catch (error) {
-          console.error("Error loading standards:", error);
-        }
-      }
-    
-    
-      // Update the loadMediums function to accept a boardId parameter
-    async function loadMediums(boardId) {
-      try {
-        if (boardId) {
-          const response = await axios.get(`/api/mediums/${boardId}`);
-          setMediums(response.data);
-        } else {
-          setMediums([]);
-        }
-      } catch (error) {
-        console.error("Error loading mediums:", error);
-      }
     }
-    
-    
+
+    async function loadStandards(mediumId) {
+        try {
+            if (mediumId) {
+                const response = await axios.get(`/api/standards/${mediumId}`);
+                setStandards(response.data);
+            } else {
+                const response = await axios.get("/api/standards");
+                setStandards(response.data);
+            }
+        } catch (error) {
+            console.error("Error loading standards:", error);
+        }
+    }
+
+
+    // Update the loadMediums function to accept a boardId parameter
+    async function loadMediums(boardId) {
+        try {
+            if (boardId) {
+                const response = await axios.get(`/api/mediums/${boardId}`);
+                setMediums(response.data);
+            } else {
+                setMediums([]);
+            }
+        } catch (error) {
+            console.error("Error loading mediums:", error);
+        }
+    }
+
+
 
     async function loadSubjects() {
         try {
@@ -93,6 +98,9 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
             setStandardId('');
             onSubjectChange();
             showNotification('Subject added successfully');
+            setBoards([]);
+            setMediums([]);
+            setStandards([]);
         } catch (error) {
             console.error("Error adding subject:", error);
             showNotification('Error adding subject');
@@ -125,6 +133,7 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
     }
 
     function handleEditAll() {
+        loadStandards();
         setEditableSubjects(subjects.map(subject => ({
             ...subject,
             newName: subject.name,
@@ -162,6 +171,7 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
 
             await Promise.all([...updatePromises, ...deletePromises]);
             loadSubjects();
+            loadStandards();
             onSubjectChange();
             showNotification('Subjects updated and deleted successfully');
             setIsEditAllModalOpen(false);
@@ -218,42 +228,42 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                     className="flex-1 p-2 border border-gray-300 rounded mr-2"
                 />
                 <select
-          value={boardId}
-          onChange={(e) => setBoardId(e.target.value)}
-          className="flex-1 p-2 border border-gray-300 rounded mr-2"
-        >
-          <option value="">Select board</option>
-          {boards.map((board) => (
-            <option key={board.id} value={board.id}>
-              {board.name}
-            </option>
-          ))}
-        </select>
-        
-        <select
-          value={mediumId}
-          onChange={(e) => setMediumId(e.target.value)}
-          className="flex-1 p-2 border border-gray-300 rounded mr-2"
-        >
-          <option value="">Select medium</option>
-          {mediums.map((medium) => (
-            <option key={medium.id} value={medium.id}>
-              {medium.name}
-            </option>
-          ))}
-        </select>
-        <select
-          value={standardId}
-          onChange={(e) => setStandardId(e.target.value)}
-          className="flex-1 p-2 border border-gray-300 rounded mr-2"
-        >
-          <option value="">Select standard</option>
-          {standards.map((standard) => (
-            <option key={standard.id} value={standard.id}>
-              {standard.name}
-            </option>
-          ))}
-        </select>
+                    value={boardId}
+                    onChange={(e) => setBoardId(e.target.value)}
+                    className="flex-1 p-2 border border-gray-300 rounded mr-2"
+                >
+                    <option value="">Select board</option>
+                    {boards.map((board) => (
+                        <option key={board.id} value={board.id}>
+                            {board.name}
+                        </option>
+                    ))}
+                </select>
+
+                <select
+                    value={mediumId}
+                    onChange={(e) => setMediumId(e.target.value)}
+                    className="flex-1 p-2 border border-gray-300 rounded mr-2"
+                >
+                    <option value="">Select medium</option>
+                    {mediums.map((medium) => (
+                        <option key={medium.id} value={medium.id}>
+                            {medium.name}
+                        </option>
+                    ))}
+                </select>
+                <select
+                    value={standardId}
+                    onChange={(e) => setStandardId(e.target.value)}
+                    className="flex-1 p-2 border border-gray-300 rounded mr-2"
+                >
+                    <option value="">Select standard</option>
+                    {standards.map((standard) => (
+                        <option key={standard.id} value={standard.id}>
+                            {standard.name}
+                        </option>
+                    ))}
+                </select>
                 <button
                     onClick={addSubject}
                     className="p-2 bg-blue-500 text-white rounded"
@@ -315,43 +325,90 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
             </div>
 
             {isUpdateModalOpen && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-md max-w-md">
+
+                        <div className="mb-4">
+                            <p className="text-lg font-semibold mb-4">Current Details:</p>
+                            <p>Standard: {currentSubject.standardName}</p>
+                            <p>Medium Name: {currentSubject.mediumName}</p>
+                            <p>Board Name: {currentSubject.boardName}</p>
+                        </div>
+
                         <h3 className="text-xl font-semibold mb-4">Update Subject</h3>
+
+                        <h5 className="text-lg font-semibold mb-4">Subject Name:</h5>
                         <input
                             type="text"
                             value={currentSubject.name}
                             onChange={(e) => setCurrentSubject({ ...currentSubject, name: e.target.value })}
                             className="mb-4 p-2 border border-gray-300 rounded w-full"
                         />
-                        <select
-                            value={currentSubject.parentref}
-                            onChange={(e) => setCurrentSubject({ ...currentSubject, parentref: e.target.value })}
-                            className="mb-4 p-2 border border-gray-300 rounded w-full"
-                        >
-                            <option value="">Select standard</option>
-                            {standards.map((standard) => (
-                                <option key={standard.id} value={standard.id}>
-                                    {standard.name}
-                                </option>
-                            ))}
-                        </select>
+
                         <div className="mb-4">
-                            <p>Medium Name: {currentSubject.mediumName}</p>
-                            <p>Board Name: {currentSubject.boardName}</p>
+
+                            <h5 className="text-lg font-semibold mb-4">Select Board:</h5>
+                            <select
+                                value={boardId}
+                                onChange={(e) => setBoardId(e.target.value)}
+                                className="flex-1 p-2 border border-gray-300 rounded mr-2"
+                            >
+                                <option value="">Select Board</option>
+                                {boards.map((board) => (
+                                    <option key={board.id} value={board.id}>
+                                        {board.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <br />
+                            <br />
+
+
+                            <h5 className="text-lg font-semibold mb-4">Select Medium:</h5>
+                            <select
+                                value={mediumId}
+                                onChange={(e) => setMediumId(e.target.value)}
+                                className="flex-1 p-2 border border-gray-300 rounded mr-2"
+                            >
+                                <option value="">Select Medium</option>
+                                {mediums.map((medium) => (
+                                    <option key={medium.id} value={medium.id}>
+                                        {medium.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <br />
+                            <br />
+
+                            <h5 className="text-lg font-semibold mb-4">Select Standard:</h5>
+                            <select
+                                value={currentSubject.parentref}
+                                onChange={(e) => setCurrentSubject({ ...currentSubject, parentref: e.target.value })}
+                                className="mb-4 p-2 border border-gray-300 rounded w-full"
+                            >
+                                <option value="">Select Standard</option>
+                                {standards.map((standard) => (
+                                    <option key={standard.id} value={standard.id}>
+                                        {standard.name}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
+
                         <div className="flex justify-between mt-4">
                             <button
-                                onClick={() => {setIsUpdateModalOpen(false);
-                                    showNotification('Update request canceled');}
-                                }
-                                className="p-2 bg-gray-400 text-white rounded mr-2"
+                                onClick={() => {
+                                    setIsUpdateModalOpen(false);
+                                    showNotification('Update request canceled');
+                                }}
+                                className="p-2 bg-gray-400 text-white rounded mr-2 focus:outline-none"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={async () => {
                                     try {
+                                        // ... your update logic
                                         await axios.put(`/api/subjects/${currentSubject.id}`, {
                                             name: currentSubject.name,
                                             parentref: currentSubject.parentref,
@@ -365,7 +422,7 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                                         showNotification('Error updating subject');
                                     }
                                 }}
-                                className="p-2 bg-yellow-500 text-white rounded"
+                                className="p-2 bg-blue-500 text-white rounded focus:outline-none"
                             >
                                 Update
                             </button>
@@ -374,6 +431,7 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                 </div>
             )}
 
+
             {isDeleteModalOpen && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
                     <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
@@ -381,8 +439,10 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                         <p>Are you sure you want to delete the subject "{currentSubject.name}"?</p>
                         <div className="flex justify-between mt-4">
                             <button
-                                onClick={() => {setIsDeleteModalOpen(false);
-                                    showNotification('Delete request canceled');}
+                                onClick={() => {
+                                    setIsDeleteModalOpen(false);
+                                    showNotification('Delete request canceled');
+                                }
                                 }
                                 className="p-2 bg-gray-400 text-white rounded mr-2"
                             >
@@ -391,7 +451,8 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                             <button
                                 onClick={async () => {
                                     deleteSubject(currentSubject.id);
-                                    setIsDeleteModalOpen(false);}}
+                                    setIsDeleteModalOpen(false);
+                                }}
                                 className="p-2 bg-red-500 text-white rounded"
                             >
                                 Delete
@@ -458,8 +519,10 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                         </table>
                         <div className="flex justify-between mt-4">
                             <button
-                                onClick={() => {setIsEditAllModalOpen(false);
-                                    showNotification('Edit request cancelled');}
+                                onClick={() => {
+                                    setIsEditAllModalOpen(false);
+                                    showNotification('Edit request cancelled');
+                                }
                                 }
                                 className="p-2 bg-gray-400 text-white rounded mr-2"
                             >

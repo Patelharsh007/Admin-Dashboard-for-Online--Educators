@@ -85,7 +85,7 @@ function BoardForm({ reloadKey, onBoardChange }) {
 
     async function handleEditBoards() {
         try {
-            const updatePromises = editableBoards.map(board => 
+            const updatePromises = editableBoards.map(board =>
                 axios.put(`/api/boards/${board.id}`, { name: board.name })
             );
             const deletePromises = editableBoards
@@ -214,6 +214,7 @@ function BoardForm({ reloadKey, onBoardChange }) {
                                 </button>
                                 <button
                                     onClick={() => {
+                                        setCurrentBoardName(board.name);
                                         setCurrentBoardToDelete(board);
                                         setIsDeleteModalOpen(true);
                                     }}
@@ -230,8 +231,17 @@ function BoardForm({ reloadKey, onBoardChange }) {
             {isUpdateModalOpen && (
                 <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-gray-800 bg-opacity-75">
                     <div className="bg-white p-6 rounded-lg">
-                        <h2 className="text-xl font-semibold mb-4">Update Board</h2>
-                        <p className="mb-2">Board ID: {currentBoardId}</p>
+                    <div className="mb-4">
+                        <p className="text-lg font-semibold mb-4">Current Details:</p>
+                        <p>Board Name: {currentBoardName}</p>
+
+                    </div>
+
+                    <h3 className="text-xl font-semibold mb-4">Update Board</h3>
+
+                    
+                    <h5 className="text-lg font-semibold mb-4">Board Name:</h5>
+                        
                         <input
                             type="text"
                             value={currentBoardName}
@@ -330,7 +340,8 @@ function BoardForm({ reloadKey, onBoardChange }) {
                         </table>
                         <div className="flex justify-between">
                             <button
-                                onClick={() => {setIsEditModalOpen(false);
+                                onClick={() => {
+                                    setIsEditModalOpen(false);
                                     showNotification('Edit request canceled');
                                 }}
                                 className="p-2 bg-gray-400 text-white rounded mr-2"
