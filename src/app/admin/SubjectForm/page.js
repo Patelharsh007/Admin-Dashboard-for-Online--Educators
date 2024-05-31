@@ -22,21 +22,67 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
     const [boards, setBoards] = useState([]);
 
 
+    // Define new state variables for filters
+    const [filteredstandards, setfilterStandards] = useState([]);
+    const [filteredmediums, setfilterMediums] = useState([]);
+    const [filteredboards, setfilterBoards] = useState([]);
 
+
+    // Define state variables for filters and set initial values
+    const [subjectFilters, setSubjectFilters] = useState({
+        chapterName: "",
+        subjectName: "",
+        standardName: "",
+        mediumName: "",
+        boardName: "",
+    });
+    
+
+    // Define state variable for fetched chapters
+    const [fetchedSubjects, setFetchedSubjects] = useState([]);
+
+    // Fetch chapters on component mount or when reloadKey changes
+    useEffect(() => {
+        const fetchData = async () => {
+            const response = await axios.get('/api/subjects'); // Replace with your API endpoint
+            setFetchedSubjects(response.data);
+        };
+        fetchData();
+    }, [reloadKey]); // Dependency array includes reloadKey
+
+
+    // Update the loadSubjects & loadBoards function to accept a reload key
     useEffect(() => {
         loadSubjects();
         loadBoards();
     }, [reloadKey]);
 
+    // Update the loadMediums function to accept a boardId parameter
     useEffect(() => {
         loadStandards(mediumId);
     }, [mediumId]);
 
+    // Update the loadMediums function to accept a boardId parameter
     useEffect(() => {
         loadMediums(boardId);
     }, [boardId]);
 
 
+
+    // Call the new function to load all standards during filter
+    useEffect(() => {
+        loadAllStandards();
+    }, []);
+
+    // Call the new function to load all mediums during filter
+    useEffect(() => {
+        loadAllMediums();
+    }, []);
+
+    // Call the new function to load all boards during filter
+    useEffect(() => {
+        loadAllBoards();
+    }, []);
 
     async function loadBoards() {
         try {
@@ -81,7 +127,7 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
             setStandards(sortedStandards);
         } catch (error) {
             console.error("Error loading standards sorted by board:", error);
-            showErrorNotification('Error loading standards');   
+            showErrorNotification('Error loading standards');
         }
     }
 
@@ -244,6 +290,133 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
         setSubjects(sortedSubjects);
     }
 
+
+    // TRy
+
+    // Define a new function to filter chapters based on the current filters
+    const filterSubjects = (subjects) => {
+        const { subjectName, standardName, mediumName, boardName } = subjectFilters;
+        return subjects.filter((subject) => (
+            (!subjectName || subject.name.toLowerCase().includes(subjectName.toLowerCase())) &&
+            (!standardName || subject.standardName.includes(standardName)) &&
+            (!mediumName || subject.mediumName.includes(mediumName)) &&
+            (!boardName || subject.boardName.includes(boardName))
+        ));
+    };
+
+    // Filter the fetched subjects based on the current filters
+    const filteredSubjects = filterSubjects(fetchedSubjects);
+
+    // Define a new function to handle subject name filter changes
+    const handleSubjectNameChange = (e) => {
+        setSubjectFilters({ ...subjectFilters, subjectName: e.target.value });
+    };
+
+
+    // Define a new function to handle subject filter changes
+    //   const handleSubjectFilterChange = (event) => {
+    //     // Update the subject filter value
+    //     const selectedSubject = event.target.value;
+    //     setChapterFilters((prevFilters) => ({
+    //       ...prevFilters,
+    //       subjectName: selectedSubject,
+    //     }));
+    //   };
+
+    // Define a new function to handle standard filter changes
+    function handleStandardFilterChange(event) {
+        const selectedStandard = event.target.value;
+        setSubjectFilters((prevFilters) => ({
+            ...prevFilters,
+            standardName: selectedStandard,
+        }));
+    }
+
+    // Define a new function to handle medium filter changes
+    function handleMediumFilterChange(event) {
+        const selectedMedium = event.target.value;
+        setSubjectFilters((prevFilters) => ({
+            ...prevFilters,
+            mediumName: selectedMedium,
+        }));
+    }
+
+    // Define a new function to handle board filter changes
+    function handleBoardFilterChange(event) {
+        const selectedBoard = event.target.value;
+        setSubjectFilters((prevFilters) => ({
+            ...prevFilters,
+            boardName: selectedBoard,
+        }));
+    }
+
+
+    // Define a new function to load all standards for filter
+    async function loadAllStandards() {
+        try {
+            const response = await axios.get(`/api/standards`);
+            setfilterStandards(response.data);
+        } catch (error) {
+            console.error("Error loading standards:", error);
+            showErrorNotification("Error loading standards");
+        }
+    }
+
+    // Define a new function to load all mediums for filter  
+    async function loadAllMediums() {
+        try {
+            const response = await axios.get(`/api/mediums`);
+            setfilterMediums(response.data);
+        } catch (error) {
+            console.error("Error loading mediums:", error);
+            showErrorNotification("Error loading mediums");
+        }
+    }
+
+    // Define a new function to load all boards for filter
+    async function loadAllBoards() {
+        try {
+            const response = await axios.get(`/api/boards`);
+            setfilterBoards(response.data);
+        } catch (error) {
+            console.error("Error loading boards:", error);
+            showErrorNotification("Error loading boards");
+        }
+    }
+
+    // End rry
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     return (
         <div className="max-w-5xl mx-auto p-6 bg-white shadow-md rounded-lg">
             <h2 className="text-2xl font-semibold mb-4 flex justify-between">
@@ -309,7 +482,66 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
             </div>
             {notification && <div className="mb-4 p-2 bg-green-200 text-green-800 rounded">{notification}</div>}
             {errornotification && <div className="mb-4 p-2 bg-red-200 text-red-800 rounded">{errornotification}</div>}
+
+
             <div className="overflow-x-auto">
+                <div className="mb-4">
+                    <h3 className="text-xl font-semibold mb-4">Filter Subjects</h3>
+                    <input
+                        type="text"
+                        placeholder="Search Subject Name"
+                        value={subjectFilters.subjectName}
+                        onChange={handleSubjectNameChange}
+                        className="p-2 border border-gray-300 rounded mr-2"
+                    />
+                    <select
+                        value={subjectFilters.boardName}
+                        onChange={handleBoardFilterChange}
+                        className="flex-1 p-2 border border-gray-300 rounded mr-2"
+                    >
+                        <option value="">All Boards</option>
+                        {/* Filter unique mediums */}
+                        {Array.from(new Set(filteredboards.map(board => board.name)))
+                            .sort((a, b) => a.localeCompare(b))
+                            .map((boardName) => (
+                                <option key={boardName} value={boardName}>
+                                    {boardName}
+                                </option>
+                            ))}
+                    </select>
+                    <select
+                        value={subjectFilters.mediumName}
+                        onChange={handleMediumFilterChange}
+                        className="flex-1 p-2 border border-gray-300 rounded mr-2"
+                    >
+                        <option value="">All Mediums</option>
+                        {/* Filter unique mediums */}
+                        {Array.from(new Set(filteredmediums.map(medium => medium.name)))
+                            .sort((a, b) => a.localeCompare(b))
+                            .map((mediumName) => (
+                                <option key={mediumName} value={mediumName}>
+                                    {mediumName}
+                                </option>
+                            ))}
+                    </select>
+                    <select
+                        value={subjectFilters.standardName}
+                        onChange={handleStandardFilterChange}
+                        className="flex-1 p-2 border border-gray-300 rounded mr-2"
+                    >
+                        <option value="">All Standards</option>
+                        {/* Filter unique standards */}
+                        {Array.from(new Set(filteredstandards.map(standard => standard.name)))
+                            .sort((a, b) => a.localeCompare(b))
+                            .map((standardName) => (
+                                <option key={standardName} value={standardName}>
+                                    {standardName}
+                                </option>
+                            ))}
+                    </select>
+                </div>
+
+
                 <table className="min-w-full border-collapse">
                     <thead>
                         <tr>
@@ -334,7 +566,7 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
 
 
                     <tbody>
-                        {subjects.map((subject) => (
+                        {filteredSubjects.map((subject) => (
                             <tr key={subject.id}>
                                 <td className="border-b p-2">{subject.id}</td>
                                 <td className="border-b p-2">{subject.name}</td>
@@ -374,99 +606,99 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
 
                         <div>
 
-                        <h3 className="text-xl font-semibold mb-4">Update Subject</h3>
+                            <h3 className="text-xl font-semibold mb-4">Update Subject</h3>
 
-                        <h5 className="text-lg font-semibold mb-4">Subject Name:</h5>
-                        <input
-                            type="text"
-                            value={currentSubject.name}
-                            onChange={(e) => setCurrentSubject({ ...currentSubject, name: e.target.value.toUpperCase() })}
-                            className="mb-4 p-2 border border-gray-300 rounded w-full"
-                        />
-
-                        <div className="mb-4">
-
-                            <h5 className="text-lg font-semibold mb-4">Select Board:</h5>
-                            <select
-                                value={boardId}
-                                onChange={(e) => setBoardId(e.target.value)}
-                                className="flex-1 p-2 border border-gray-300 rounded mr-2"
-                            >
-                                <option value="">Select Board</option>
-                                {boards.map((board) => (
-                                    <option key={board.id} value={board.id}>
-                                        {board.name}
-                                    </option>
-                                ))}
-                            </select>
-                            <br />
-                            <br />
-
-
-                            <h5 className="text-lg font-semibold mb-4">Select Medium:</h5>
-                            <select
-                                value={mediumId}
-                                onChange={(e) => setMediumId(e.target.value)}
-                                className="flex-1 p-2 border border-gray-300 rounded mr-2"
-                            >
-                                <option value="">Select Medium</option>
-                                {mediums.map((medium) => (
-                                    <option key={medium.id} value={medium.id}>
-                                        {medium.name}
-                                    </option>
-                                ))}
-                            </select>
-                            <br />
-                            <br />
-
-                            <h5 className="text-lg font-semibold mb-4">Select Standard:</h5>
-                            <select
-                                value={currentSubject.parentref}
-                                onChange={(e) => setCurrentSubject({ ...currentSubject, parentref: e.target.value })}
+                            <h5 className="text-lg font-semibold mb-4">Subject Name:</h5>
+                            <input
+                                type="text"
+                                value={currentSubject.name}
+                                onChange={(e) => setCurrentSubject({ ...currentSubject, name: e.target.value.toUpperCase() })}
                                 className="mb-4 p-2 border border-gray-300 rounded w-full"
-                            >
-                                <option value="">Select Standard</option>
-                                {standards.map((standard) => (
-                                    <option key={standard.id} value={standard.id}>
-                                        {standard.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                            />
 
-                        <div className="flex justify-between mt-4">
-                            <button
-                                onClick={() => {
-                                    setIsUpdateModalOpen(false);
-                                    //showNotification('Update request cancelled');
-                                    showErrorNotification('Update request cancelled');
-                                }}
-                                className="p-2 bg-gray-400 text-white rounded mr-2 focus:outline-none"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={async () => {
-                                    try {
-                                        // ... your update logic
-                                        await axios.put(`/api/subjects/${currentSubject.id}`, {
-                                            name: currentSubject.name,
-                                            parentref: currentSubject.parentref,
-                                        });
-                                        loadSubjects();
-                                        onSubjectChange();
+                            <div className="mb-4">
+
+                                <h5 className="text-lg font-semibold mb-4">Select Board:</h5>
+                                <select
+                                    value={boardId}
+                                    onChange={(e) => setBoardId(e.target.value)}
+                                    className="flex-1 p-2 border border-gray-300 rounded mr-2"
+                                >
+                                    <option value="">Select Board</option>
+                                    {boards.map((board) => (
+                                        <option key={board.id} value={board.id}>
+                                            {board.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                <br />
+                                <br />
+
+
+                                <h5 className="text-lg font-semibold mb-4">Select Medium:</h5>
+                                <select
+                                    value={mediumId}
+                                    onChange={(e) => setMediumId(e.target.value)}
+                                    className="flex-1 p-2 border border-gray-300 rounded mr-2"
+                                >
+                                    <option value="">Select Medium</option>
+                                    {mediums.map((medium) => (
+                                        <option key={medium.id} value={medium.id}>
+                                            {medium.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                <br />
+                                <br />
+
+                                <h5 className="text-lg font-semibold mb-4">Select Standard:</h5>
+                                <select
+                                    value={currentSubject.parentref}
+                                    onChange={(e) => setCurrentSubject({ ...currentSubject, parentref: e.target.value })}
+                                    className="mb-4 p-2 border border-gray-300 rounded w-full"
+                                >
+                                    <option value="">Select Standard</option>
+                                    {standards.map((standard) => (
+                                        <option key={standard.id} value={standard.id}>
+                                            {standard.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="flex justify-between mt-4">
+                                <button
+                                    onClick={() => {
                                         setIsUpdateModalOpen(false);
-                                        showNotification('Subject updated successfully');
-                                    } catch (error) {
-                                        console.error("Error updating subject:", error);
-                                        //showNotification('Error updating subject');
-                                        showErrorNotification('Error updating subject');
-                                    }
-                                }}
-                                className="p-2 bg-blue-500 text-white rounded focus:outline-none"
-                            >
-                                Update
-                            </button>
+                                        //showNotification('Update request cancelled');
+                                        showErrorNotification('Update request cancelled');
+                                    }}
+                                    className="p-2 bg-gray-400 text-white rounded mr-2 focus:outline-none"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            // ... your update logic
+                                            await axios.put(`/api/subjects/${currentSubject.id}`, {
+                                                name: currentSubject.name,
+                                                parentref: currentSubject.parentref,
+                                            });
+                                            loadSubjects();
+                                            onSubjectChange();
+                                            setIsUpdateModalOpen(false);
+                                            showNotification('Subject updated successfully');
+                                        } catch (error) {
+                                            console.error("Error updating subject:", error);
+                                            //showNotification('Error updating subject');
+                                            showErrorNotification('Error updating subject');
+                                        }
+                                    }}
+                                    className="p-2 bg-blue-500 text-white rounded focus:outline-none"
+                                >
+                                    Update
+                                </button>
                             </div>
                         </div>
                     </div>
