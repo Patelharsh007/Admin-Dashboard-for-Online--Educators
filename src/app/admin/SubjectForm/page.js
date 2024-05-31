@@ -20,7 +20,7 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
     const [boardId, setBoardId] = useState("");
     const [boards, setBoards] = useState([]);
 
-    
+
 
     useEffect(() => {
         loadSubjects();
@@ -35,7 +35,7 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
         loadMediums(boardId);
     }, [boardId]);
 
-    
+
 
     async function loadBoards() {
         try {
@@ -57,6 +57,27 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
             }
         } catch (error) {
             console.error("Error loading standards:", error);
+        }
+    }
+
+    async function loadStandardsSortedByBoard() {
+        try {
+            const response = await axios.get("/api/standards");
+            const sortedStandards = response.data.sort((a, b) => {
+                // Sort by boardName
+                const boardComparison = a.boardName.localeCompare(b.boardName);
+                if (boardComparison !== 0) return boardComparison;
+
+                // Sort by mediumName
+                const mediumComparison = a.mediumName.localeCompare(b.mediumName);
+                if (mediumComparison !== 0) return mediumComparison;
+
+                // Assuming standardName is a number, sort numerically
+                return a.standardName - b.standardName;
+            });
+            setStandards(sortedStandards);
+        } catch (error) {
+            console.error("Error loading standards sorted by board:", error);
         }
     }
 
@@ -98,9 +119,6 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
             setStandardId('');
             onSubjectChange();
             showNotification('Subject added successfully');
-            setBoards([]);
-            setMediums([]);
-            setStandards([]);
         } catch (error) {
             console.error("Error adding subject:", error);
             showNotification('Error adding subject');
@@ -133,7 +151,7 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
     }
 
     function handleEditAll() {
-        loadStandards();
+        loadStandardsSortedByBoard();
         setEditableSubjects(subjects.map(subject => ({
             ...subject,
             newName: subject.name,
@@ -326,7 +344,7 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
 
             {isUpdateModalOpen && (
                 <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-md max-w-md">
+                    <div className="bg-white p-6 px-30 flex rounded-lg shadow-md max-w-md">
 
                         <div className="mb-4">
                             <p className="text-lg font-semibold mb-4">Current Details:</p>
@@ -334,6 +352,8 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                             <p>Medium Name: {currentSubject.mediumName}</p>
                             <p>Board Name: {currentSubject.boardName}</p>
                         </div>
+
+                        <div>
 
                         <h3 className="text-xl font-semibold mb-4">Update Subject</h3>
 
@@ -426,6 +446,7 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                             >
                                 Update
                             </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -498,10 +519,11 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                                                 <option value="">Select standard</option>
                                                 {standards.map((standard) => (
                                                     <option key={standard.id} value={standard.id}>
-                                                        {standard.name}
+                                                        {`${standard.name} (${standard.boardName} - ${standard.mediumName} Medium)`}
                                                     </option>
                                                 ))}
                                             </select>
+
                                         </td>
                                         <td className="border-b p-2">{subject.mediumName}</td>
                                         <td className="border-b p-2">{subject.boardName}</td>
@@ -535,6 +557,7 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                                 Save Changes
                             </button>
                         </div>
+
                     </div>
                 </div>
             )}

@@ -22,6 +22,7 @@ function ChapterForm({ reloadKey }) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [sortBy, setSortBy] = useState({ field: "chapterId", order: "asc" });
 
+
   useEffect(() => {
     loadChapters();
     loadBoards();
@@ -38,6 +39,13 @@ function ChapterForm({ reloadKey }) {
   useEffect(() => {
     loadSubjects(standardId);
   }, [standardId]);
+
+  useEffect(() => {
+    if (isEditAllModalOpen) {
+      loadSubjectsSortedByBoard();
+    }
+  }, [isEditAllModalOpen]);
+
 
   async function loadChapters() {
     try {
@@ -101,6 +109,31 @@ function ChapterForm({ reloadKey }) {
     }
   }
 
+  async function loadSubjectsSortedByBoard() {
+    try {
+      let url = "/api/subjects";
+
+      const response = await axios.get(url);
+      const sortedStandards = response.data.sort((a, b) => {
+        // Sort by boardName
+        const boardComparison = a.boardName.localeCompare(b.boardName);
+        if (boardComparison !== 0) return boardComparison;
+
+        // Sort by mediumName
+        const mediumComparison = a.mediumName.localeCompare(b.mediumName);
+        if (mediumComparison !== 0) return mediumComparison;
+
+        // Assuming standardName is a number, sort numerically
+        return a.standardName - b.standardName;
+      });
+      setSubjects(sortedStandards);
+    } catch (error) {
+      console.error("Error loading subjects sorted by board:", error);
+    }
+  }
+
+
+
   async function addChapter() {
     try {
       if (!name.trim() || !subjectId.trim()) {
@@ -113,9 +146,7 @@ function ChapterForm({ reloadKey }) {
       setSubjectId("");
       loadChapters();
       showNotification("Chapter added successfully");
-      setMediums([]);
-      setStandards([]);
-      setSubjects([]);  
+
     } catch (error) {
       console.error("Error adding chapter:", error);
       showNotification("Error adding chapter");
@@ -198,7 +229,7 @@ function ChapterForm({ reloadKey }) {
   }
 
   function handleUpdateModal(chapter) {
-      setCurrentChapter({
+    setCurrentChapter({
       ...chapter,
       newName: chapter.chapterName,
       newSubjectId: chapter.subjectId,
@@ -380,7 +411,7 @@ function ChapterForm({ reloadKey }) {
       {isUpdateModalOpen && (
 
         <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-md max-w-md">
+          <div className="bg-white flex gap-10 p-6 px-35 rounded-lg shadow-md">
 
             <div className="mb-4">
               <p className="text-lg font-semibold mb-4">Current Details:</p>
@@ -390,6 +421,10 @@ function ChapterForm({ reloadKey }) {
               <p>Board Name: {currentChapter.boardName}</p>
               <p>Standard Name: {currentChapter.standardName}</p>
             </div>
+
+
+            <div>
+
 
             <h3 className="text-xl font-semibold mb-4">Update Chapters</h3>
 
@@ -509,6 +544,7 @@ function ChapterForm({ reloadKey }) {
               >
                 Update
               </button>
+              </div>
             </div>
           </div>
         </div>
@@ -587,18 +623,19 @@ function ChapterForm({ reloadKey }) {
                     <td className="border-b p-2">
                       <select
                         value={chapter.newSubjectId}
-                        onChange={(e) =>
-                          handleEditAllChange(chapter.chapterId, "newSubjectId", e.target.value)
-                        }
+                        onChange={(e) => handleEditAllChange(chapter.chapterId, 'newSubjectId', e.target.value)}
                         className="p-2 border border-gray-300 rounded w-full"
                       >
                         <option value="">Select subject</option>
                         {subjects.map((subject) => (
                           <option key={subject.id} value={subject.id}>
-                            {subject.name}
+                            {`${subject.name} (${subject.boardName} - ${subject.mediumName} - ${subject.standardName})`}
                           </option>
                         ))}
                       </select>
+
+
+
                     </td>
                     {/* <td className="border-b p-2">{chapter.subjectName}</td> */}
                     <td className="border-b p-2">{chapter.standardName}</td>
@@ -620,7 +657,7 @@ function ChapterForm({ reloadKey }) {
               <button
                 onClick={() => {
                   setIsEditAllModalOpen(false);
-                  showNotification('Edit request canceled')
+                  showNotification('Edit request cancelled')
                 }
                 }
                 className="p-2 bg-gray-400 text-white rounded mr-2"

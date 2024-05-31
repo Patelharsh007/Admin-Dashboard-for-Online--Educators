@@ -14,13 +14,15 @@ function StandardForm({ reloadKey, onStandardChange }) {
     const [currentStandardId, setCurrentStandardId] = useState('');
     const [currentStandardName, setCurrentStandardName] = useState('');
     const [currentMediumId, setCurrentMediumId] = useState('');
-    const[currentMediumName, setCurrentMediumName] = useState('');
+    const [currentMediumName, setCurrentMediumName] = useState('');
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [currentStandardToDelete, setCurrentStandardToDelete] = useState(null);
     const [isEditAllModalOpen, setIsEditAllModalOpen] = useState(false);
     const [editableStandards, setEditableStandards] = useState([]);
     const [currentBoardName, setCurrentBoardName] = useState('');
     const [boardId, setBoardId] = useState("");
+    const [allMediums, setAllMediums] = useState([]);
+
 
 
     useEffect(() => {
@@ -31,7 +33,12 @@ function StandardForm({ reloadKey, onStandardChange }) {
     useEffect(() => {
         loadMediums(boardId);
     }, [boardId]);
-    
+
+    useEffect(() => {
+        loadAllMediums();
+    }, []);
+
+
     async function loadStandards() {
         try {
             const response = await axios.get('/api/standards');
@@ -65,6 +72,17 @@ function StandardForm({ reloadKey, onStandardChange }) {
         }
     }
 
+    async function loadAllMediums() {
+        try {
+            const response = await axios.get(`/api/mediums`);
+            const sortedMediums = response.data.sort((a, b) => a.boardName.localeCompare(b.boardName));
+            setAllMediums(sortedMediums);
+        } catch (error) {
+            console.error("Error loading all mediums:", error);
+        }
+    }
+
+
     async function addStandard() {
         try {
             if (!name.trim() || !mediumId.trim()) {
@@ -76,7 +94,6 @@ function StandardForm({ reloadKey, onStandardChange }) {
             setMediumId('');
             onStandardChange(); // Trigger reload
             showNotification('Standard added successfully');
-            setMediums([]);
         } catch (error) {
             console.error("Error adding standard:", error);
             showNotification('Error adding standard');
@@ -184,6 +201,7 @@ function StandardForm({ reloadKey, onStandardChange }) {
                 onStandardChange();
                 showNotification('Standards updated successfully');
                 setIsEditAllModalOpen(false);
+                setMediums([]);
             });
         } catch (error) {
             console.error("Error editing standards:", error);
@@ -324,8 +342,8 @@ function StandardForm({ reloadKey, onStandardChange }) {
             {isUpdateModalOpen && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
                     <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
-                        
-                    <div className="mb-4">
+
+                        <div className="mb-4">
                             <p className="text-lg font-semibold mb-4">Current Details:</p>
                             <p>Standard: {currentStandardName}</p>
                             <p>Medium Name: {currentMediumName}</p>
@@ -341,7 +359,7 @@ function StandardForm({ reloadKey, onStandardChange }) {
                             className="w-full p-2 border border-gray-300 rounded mb-4"
                             placeholder="Standard Name"
                         />
-                        
+
                         <div className="mb-4">
 
                             <h5 className="text-lg font-semibold mb-4">Select Board:</h5>
@@ -363,20 +381,20 @@ function StandardForm({ reloadKey, onStandardChange }) {
 
                             <h5 className="text-lg font-semibold mb-4">Select Medium:</h5>
                             <select
-                            value={currentMediumId}
-                            onChange={(e) => setCurrentMediumId(e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded mb-4"
-                        >
-                            <option value="">Select Medium</option>
-                            {mediums.map((medium) => (
-                                <option key={medium.id} value={medium.id}>
-                                    {medium.name}
-                                </option>
-                            ))}
-                        </select>
-                            
+                                value={currentMediumId}
+                                onChange={(e) => setCurrentMediumId(e.target.value)}
+                                className="w-full p-2 border border-gray-300 rounded mb-4"
+                            >
+                                <option value="">Select Medium</option>
+                                {mediums.map((medium) => (
+                                    <option key={medium.id} value={medium.id}>
+                                        {medium.name}
+                                    </option>
+                                ))}
+                            </select>
+
                         </div>
-                        
+
                         <div className="flex justify-between mt-4">
                             <button
                                 onClick={() => {
@@ -462,12 +480,13 @@ function StandardForm({ reloadKey, onStandardChange }) {
                                                 className="w-full p-2 border border-gray-300 rounded"
                                             >
                                                 <option value="">Select Medium</option>
-                                                {mediums.map((medium) => (
+                                                {allMediums.map((medium) => (
                                                     <option key={medium.id} value={medium.id}>
-                                                        {medium.name}
+                                                        {`${medium.name} - (${medium.boardName})`}
                                                     </option>
                                                 ))}
                                             </select>
+
                                         </td>
                                         <td className="border-b p-2">{standard.boardName}</td>
                                         <td className="border-b p-2">
