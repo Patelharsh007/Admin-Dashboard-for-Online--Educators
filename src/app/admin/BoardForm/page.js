@@ -6,6 +6,7 @@ function BoardForm({ reloadKey, onBoardChange }) {
     const [boards, setBoards] = useState([]);
     const [name, setName] = useState('');
     const [notification, setNotification] = useState('');
+    const [errornotification, setErrorNotification] = useState('');
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
     const [currentBoardId, setCurrentBoardId] = useState('');
     const [currentBoardName, setCurrentBoardName] = useState('');
@@ -25,13 +26,15 @@ function BoardForm({ reloadKey, onBoardChange }) {
             setBoards(response.data);
         } catch (error) {
             console.error("Error loading boards:", error);
+            showErrorNotification('Error loading boards');
         }
     }
 
     async function addBoard() {
         try {
             if (!name.trim()) {
-                alert("Please enter a valid board name.");
+                //alert("Please enter a valid board name.");
+                showErrorNotification('Please enter a valid board name.');
                 return;
             }
 
@@ -43,7 +46,8 @@ function BoardForm({ reloadKey, onBoardChange }) {
             showNotification(message);
         } catch (error) {
             console.error("Error adding board:", error);
-            showNotification('Error adding board');
+            //showNotification('Error adding board');
+            showErrorNotification('Error adding board');
         }
     }
 
@@ -56,9 +60,11 @@ function BoardForm({ reloadKey, onBoardChange }) {
             showNotification(message);
         } catch (error) {
             if (error.response && error.response.data && error.response.data.message) {
-                showNotification(error.response.data.message);
+                //showNotification(error.response.data.message);
+                showErrorNotification(error.response.data.message);
             } else {
-                showNotification('Error deleting board.');
+                //showNotification('Error deleting board.');
+                showErrorNotification('Error deleting board');
             }
         }
     }
@@ -79,7 +85,8 @@ function BoardForm({ reloadKey, onBoardChange }) {
             showNotification(message);
         } catch (error) {
             console.error("Error updating board:", error);
-            showNotification('Error updating board');
+            //showNotification('Error updating board');
+            showErrorNotification('Error updating board');
         }
     }
 
@@ -98,15 +105,17 @@ function BoardForm({ reloadKey, onBoardChange }) {
             showNotification('Boards updated successfully');
         } catch (error) {
             console.error("Error editing boards:", error);
-            showNotification('Error editing boards');
+            //showNotification('Error editing boards');
+            showErrorNotification('Error editing boards');
         }
         setIsEditModalOpen(false);
     }
 
-    function cancelUpdate() {
-        setIsUpdateModalOpen(false);
-        showNotification('Update request canceled');
-    }
+    // function cancelUpdate() {
+    //     setIsUpdateModalOpen(false);
+    //     //showNotification('Update request cancelled');
+    //     showErrorNotification('Update request cancelled');
+    // }
 
     function handleEditChange(id, newName) {
         setEditableBoards(prevBoards =>
@@ -148,6 +157,13 @@ function BoardForm({ reloadKey, onBoardChange }) {
         }, 5000);
     }
 
+    function showErrorNotification(message) {
+        setErrorNotification(message);
+        setTimeout(() => {
+            setErrorNotification('');
+        }, 5000);
+    }
+
     return (
         <div className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-lg">
             <h2 className="text-2xl font-semibold mb-4 flex justify-between">
@@ -178,6 +194,7 @@ function BoardForm({ reloadKey, onBoardChange }) {
                 </button>
             </div>
             {notification && <div className="mb-4 p-2 bg-green-200 text-green-800 rounded">{notification}</div>}
+            {errornotification && <div className="mb-4 p-2 bg-red-200 text-red-800 rounded">{errornotification}</div>}
             <table className="w-full border-collapse">
                 <thead>
                     <tr>
@@ -229,14 +246,15 @@ function BoardForm({ reloadKey, onBoardChange }) {
             </table>
             {/* Update Board Modal */}
             {isUpdateModalOpen && (
-                <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-gray-800 bg-opacity-75">
-                    <div className="bg-white p-6 rounded-lg">
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+                <div className="bg-white flex gap-10 p-6 px-35 rounded-lg shadow-md">
                     <div className="mb-4">
                         <p className="text-lg font-semibold mb-4">Current Details:</p>
                         <p>Board Name: {currentBoardName}</p>
 
                     </div>
 
+                    <div>
                     <h3 className="text-xl font-semibold mb-4">Update Board</h3>
 
                     
@@ -251,7 +269,12 @@ function BoardForm({ reloadKey, onBoardChange }) {
                         />
                         <div className="flex justify-between">
                             <button
-                                onClick={cancelUpdate}
+                                onClick={() => {
+                                    setIsUpdateModalOpen(false);
+                                    setCurrentBoardToDelete(null);
+                                    //showNotification('Update request cancelled');
+                                    showErrorNotification('Update request cancelled');
+                                }}
                                 className="p-2 bg-gray-400 text-white rounded"
                             >
                                 Cancel
@@ -265,6 +288,7 @@ function BoardForm({ reloadKey, onBoardChange }) {
                             >
                                 Update
                             </button>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -281,7 +305,8 @@ function BoardForm({ reloadKey, onBoardChange }) {
                                 onClick={() => {
                                     setIsDeleteModalOpen(false);
                                     setCurrentBoardToDelete(null);
-                                    showNotification('Delete request canceled');
+                                    //showNotification('Delete request cancelled');
+                                    showErrorNotification('Delete request cancelled');
                                 }}
                                 className="p-2 bg-gray-400 text-white rounded"
                             >
@@ -342,7 +367,8 @@ function BoardForm({ reloadKey, onBoardChange }) {
                             <button
                                 onClick={() => {
                                     setIsEditModalOpen(false);
-                                    showNotification('Edit request canceled');
+                                    //showNotification('Edit request cancelled');
+                                    showErrorNotification('Edit request cancelled');
                                 }}
                                 className="p-2 bg-gray-400 text-white rounded mr-2"
                             >

@@ -8,6 +8,7 @@ function MediumForm({ reloadKey, onMediumChange }) {
     const [boardId, setBoardId] = useState('');
     const [boards, setBoards] = useState([]);
     const [notification, setNotification] = useState('');
+    const [errornotification, setErrorNotification] = useState('');
     const [sortBy, setSortBy] = useState({ field: '', order: '' });
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
     const [currentMediumId, setCurrentMediumId] = useState('');
@@ -34,6 +35,7 @@ function MediumForm({ reloadKey, onMediumChange }) {
             setMediums(response.data);
         } catch (error) {
             console.error("Error loading mediums:", error);
+            showErrorNotification('Error loading mediums');
         }
     }
 
@@ -43,13 +45,15 @@ function MediumForm({ reloadKey, onMediumChange }) {
             setBoards(response.data);
         } catch (error) {
             console.error("Error loading boards:", error);
+            showErrorNotification('Error loading boards');
         }
     }
 
     async function addMedium() {
         try {
             if (!name.trim() || !boardId.trim()) {
-                alert("Please enter a valid medium name and select a board.");
+                //alert("Please enter a valid medium name and select a board.");
+                showErrorNotification('Please enter a valid medium name and select a board.');
                 return;
             }
 
@@ -61,7 +65,8 @@ function MediumForm({ reloadKey, onMediumChange }) {
             showNotification(message);
         } catch (error) {
             console.error("Error adding medium:", error);
-            showNotification('Error adding medium');
+            //showNotification('Error adding medium');
+            showErrorNotification('Error adding medium');
         }
     }
 
@@ -74,7 +79,8 @@ function MediumForm({ reloadKey, onMediumChange }) {
             onMediumChange();
         } catch (error) {
             console.error("Error updating medium:", error);
-            showNotification('Error updating medium');
+            //showNotification('Error updating medium');
+            showErrorNotification('Error updating medium');
         }
     }
 
@@ -88,9 +94,11 @@ function MediumForm({ reloadKey, onMediumChange }) {
         } catch (error) {
             console.error("Error deleting medium:", error);
             if (error.response && error.response.data && error.response.data.message) {
-                showNotification(error.response.data.message);
+                //showNotification(error.response.data.message);
+                showErrorNotification(error.response.data.message);
             } else {
-                showNotification('Error deleting medium');
+                //showNotification('Error deleting medium');
+                showErrorNotification('Error deleting medium');
             }
         }
     }
@@ -99,6 +107,13 @@ function MediumForm({ reloadKey, onMediumChange }) {
         setNotification(message);
         setTimeout(() => {
             setNotification('');
+        }, 5000);
+    }
+
+    function showErrorNotification(message) {
+        setErrorNotification(message);
+        setTimeout(() => {
+            setErrorNotification('');
         }, 5000);
     }
 
@@ -146,7 +161,8 @@ function MediumForm({ reloadKey, onMediumChange }) {
             });
         } catch (error) {
             console.error("Error editing mediums:", error);
-            showNotification('Error editing mediums');
+            //showNotification('Error editing mediums');
+            showErrorNotification('Error editing mediums');
         }
     }
 
@@ -206,6 +222,7 @@ function MediumForm({ reloadKey, onMediumChange }) {
                 </button>
             </div>
             {notification && <div className="mb-4 p-2 bg-green-200 text-green-800 rounded">{notification}</div>}
+            {errornotification && <div className="mb-4 p-2 bg-red-200 text-red-800 rounded">{errornotification}</div>}
             <table className="w-full border-collapse">
                 <thead>
                     <tr>
@@ -323,7 +340,8 @@ function MediumForm({ reloadKey, onMediumChange }) {
                             <button
                                 onClick={() => {
                                     setIsEditAllModalOpen(false);
-                                    showNotification('Edit request canceled');
+                                    //showNotification('Edit request cancelled');
+                                    showErrorNotification('Edit request cancelled');
                                 }}
                                 className="p-2 bg-gray-400 text-white rounded mr-2"
                             >
@@ -345,14 +363,16 @@ function MediumForm({ reloadKey, onMediumChange }) {
             {/* Update Medium Modal */}
             {isUpdateModalOpen && (
 
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+                    <div className="bg-white flex gap-10 p-6 px-35 rounded-lg shadow-md">
 
                         <div className="mb-4">
                             <p className="text-lg font-semibold mb-4">Current Details:</p>
                             <p>Medium Name: {currentMediumName}</p>
                             <p>Board Name: {currentBoardName}</p>
                         </div>
+
+                        <div>
                         <h3 className="text-xl font-semibold mb-4">Update Medium</h3>
 
                         <h5 className="text-lg font-semibold mb-4">Medium Name:</h5>
@@ -387,7 +407,8 @@ function MediumForm({ reloadKey, onMediumChange }) {
                                 onClick={() => {
                                     setIsUpdateModalOpen(false);
                                     setCurrentMediumToDelete(null);
-                                    showNotification('Update request canceled');
+                                    //showNotification('Update request cancelled');
+                                    showErrorNotification('Update request cancelled');
                                 }}
                                 className="p-2 bg-gray-400 text-white rounded"
                             >
@@ -399,6 +420,7 @@ function MediumForm({ reloadKey, onMediumChange }) {
                             >
                                 Update
                             </button>
+                        </div>
                         </div>
                     </div>
                 </div>)}
@@ -414,7 +436,8 @@ function MediumForm({ reloadKey, onMediumChange }) {
                                 onClick={() => {
                                     setIsDeleteModalOpen(false);
                                     setCurrentMediumToDelete(null);
-                                    showNotification('Delete request canceled');
+                                    //showNotification('Delete request cancelled');
+                                    showErrorNotification('Delete request cancelled');
                                 }}
                                 className="p-2 bg-gray-400 text-white rounded"
                             >

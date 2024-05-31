@@ -9,6 +9,7 @@ function StandardForm({ reloadKey, onStandardChange }) {
     const [name, setName] = useState('');
     const [mediumId, setMediumId] = useState('');
     const [notification, setNotification] = useState('');
+    const [errornotification, setErrorNotification] = useState('');
     const [sortBy, setSortBy] = useState({ field: '', order: '' });
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
     const [currentStandardId, setCurrentStandardId] = useState('');
@@ -45,6 +46,7 @@ function StandardForm({ reloadKey, onStandardChange }) {
             setStandards(response.data);
         } catch (error) {
             console.error("Error loading standards:", error);
+            showErrorNotification('Error loading standards');
         }
     }
 
@@ -55,6 +57,7 @@ function StandardForm({ reloadKey, onStandardChange }) {
             setBoards(response.data);
         } catch (error) {
             console.error("Error loading boards:", error);
+            showErrorNotification('Error loading boards');
         }
     }
 
@@ -69,6 +72,7 @@ function StandardForm({ reloadKey, onStandardChange }) {
             }
         } catch (error) {
             console.error("Error loading mediums:", error);
+            showErrorNotification('Error loading mediums');
         }
     }
 
@@ -79,6 +83,7 @@ function StandardForm({ reloadKey, onStandardChange }) {
             setAllMediums(sortedMediums);
         } catch (error) {
             console.error("Error loading all mediums:", error);
+            showErrorNotification('Error loading all mediums');
         }
     }
 
@@ -96,7 +101,8 @@ function StandardForm({ reloadKey, onStandardChange }) {
             showNotification('Standard added successfully');
         } catch (error) {
             console.error("Error adding standard:", error);
-            showNotification('Error adding standard');
+            //showNotification('Error adding standard');
+            showErrorNotification('Error adding standard');
         }
     }
 
@@ -108,7 +114,8 @@ function StandardForm({ reloadKey, onStandardChange }) {
             onStandardChange();
         } catch (error) {
             console.error("Error updating standard:", error);
-            showNotification('Error updating standard');
+            //showNotification('Error updating standard');
+            showErrorNotification('Error updating standard');
         }
     }
 
@@ -120,7 +127,8 @@ function StandardForm({ reloadKey, onStandardChange }) {
             onStandardChange();
         } catch (error) {
             console.error("Error deleting standard:", error);
-            showNotification('Error deleting standard');
+            //showNotification('Error deleting standard');
+            showErrorNotification('Error deleting standard');
         }
     }
 
@@ -131,27 +139,13 @@ function StandardForm({ reloadKey, onStandardChange }) {
         }, 5000);
     }
 
-    // function handleSort(field) {
-    //     const order = sortBy.field === field && sortBy.order === 'asc' ? 'desc' : 'asc';
-    //     setSortBy({ field, order });
-    //     const sortedStandards = [...standards].sort((a, b) => {
-    //         if (field === 'id') {
-    //             // Numerical sort for the 'id' field
-    //             return order === 'asc' ? a.id - b.id : b.id - a.id;
-    //         } else if (field === 'parentref') {
-    //             // Assume 'parentref' is numeric, adjust if it's not
-    //             return order === 'asc' ? a.parentref - b.parentref : b.parentref - a.parentref;
-    //         } else {
-    //             // Lexicographical sort for other fields
-    //             const nameA = a[field].toString().toLowerCase();
-    //             const nameB = b[field].toString().toLowerCase();
-    //             if (nameA < nameB) return order === 'asc' ? -1 : 1;
-    //             if (nameA > nameB) return order === 'asc' ? 1 : -1;
-    //             return 0;
-    //         }
-    //     });
-    //     setStandards(sortedStandards);
-    // }
+    function showErrorNotification(message) {
+        setErrorNotification(message);
+        setTimeout(() => {
+            setErrorNotification('');
+        }, 5000);
+    }
+
 
     function handleSort(field) {
         const order = sortBy.field === field && sortBy.order === 'asc' ? 'desc' : 'asc';
@@ -205,7 +199,8 @@ function StandardForm({ reloadKey, onStandardChange }) {
             });
         } catch (error) {
             console.error("Error editing standards:", error);
-            showNotification('Error editing standards');
+            //showNotification('Error editing standards');
+            showErrorNotification('Error editing standards');
         }
     }
 
@@ -278,6 +273,7 @@ function StandardForm({ reloadKey, onStandardChange }) {
                 </button>
             </div>
             {notification && <div className="mb-4 p-2 bg-green-200 text-green-800 rounded">{notification}</div>}
+            {errornotification && <div className="mb-4 p-2 bg-red-200 text-red-800 rounded">{errornotification}</div>}
             <table className="w-full border-collapse">
                 <thead>
                     <tr>
@@ -340,8 +336,8 @@ function StandardForm({ reloadKey, onStandardChange }) {
 
             {/* Update Modal */}
             {isUpdateModalOpen && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg w-1/3">
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+                <div className="bg-white flex gap-10 p-6 px-35 rounded-lg shadow-md">
 
                         <div className="mb-4">
                             <p className="text-lg font-semibold mb-4">Current Details:</p>
@@ -349,6 +345,8 @@ function StandardForm({ reloadKey, onStandardChange }) {
                             <p>Medium Name: {currentMediumName}</p>
                             <p>Board Name: {currentBoardName}</p>
                         </div>
+
+                        <div>
                         <h3 className="text-xl font-semibold mb-4">Update Standard</h3>
 
                         <h5 className="text-lg font-semibold mb-4">Standard Name:</h5>
@@ -399,7 +397,8 @@ function StandardForm({ reloadKey, onStandardChange }) {
                             <button
                                 onClick={() => {
                                     setIsUpdateModalOpen(false);
-                                    showNotification("Update Request Cancelled");
+                                    //showNotification("Update Request Cancelled");
+                                    showErrorNotification("Update Request Cancelled");
                                 }}
                                 className="p-2 bg-gray-400 text-white rounded mr-2"
                             >
@@ -411,6 +410,7 @@ function StandardForm({ reloadKey, onStandardChange }) {
                             >
                                 Update
                             </button>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -426,7 +426,8 @@ function StandardForm({ reloadKey, onStandardChange }) {
                             <button
                                 onClick={() => {
                                     setIsDeleteModalOpen(false);
-                                    showNotification("Delete request canceled");
+                                    //showNotification("Delete request cancelled");
+                                    showErrorNotification("Delete request cancelled");
                                 }}
                                 className="p-2 bg-gray-400 text-white rounded mr-2"
                             >
@@ -505,7 +506,8 @@ function StandardForm({ reloadKey, onStandardChange }) {
                             <button
                                 onClick={() => {
                                     setIsEditAllModalOpen(false);
-                                    showNotification('Edit request cancelled');
+                                    //showNotification('Edit request cancelled');
+                                    showErrorNotification('Edit request cancelled');
                                 }}
                                 className="p-2 bg-gray-400 text-white rounded mr-2"
                             >

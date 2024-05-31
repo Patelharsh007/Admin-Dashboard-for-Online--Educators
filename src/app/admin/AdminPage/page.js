@@ -15,6 +15,7 @@ function AdminPage() {
     standard: 0,
     subject: 0,
     medium: 0,
+    chapter: 0,
   });
 
   const handleReload = (formType) => {
@@ -35,6 +36,12 @@ function AdminPage() {
     handleReload('subject');
   };
 
+  const handleMediumChange = () => {
+    handleReload('medium');
+    handleReload('standard');
+    handleReload('subject');
+  };
+
   const handleStandardChange = () => {
     handleReload('standard');
     handleReload('subject');
@@ -42,14 +49,14 @@ function AdminPage() {
 
   const handleSubjectChange = () => {
     handleReload('subject');
+    handleReload('chapter');
   };
 
-  const handleMediumChange = () => {
-    handleReload('medium');
-    handleReload('standard');
-    handleReload('subject');
+  const handleChapterChange = () => {
+    handleReload('chapter');
   };
 
+  
   return (
     <div className="bg-gray-100 min-h-screen">
       <Navbar />
@@ -69,7 +76,9 @@ function AdminPage() {
           {activeForm === 'SubjectForm' && (
             <SubjectForm reloadKey={reloadKeys.subject} onSubjectChange={handleSubjectChange} />
           )}
-          {activeForm === 'ChapterForm' && <ChapterForm reloadKey={reloadKeys.subject} />}
+          {activeForm === 'ChapterForm' && (
+          <ChapterForm reloadKey={reloadKeys.chapter} onChapterChange={handleChapterChange}/>
+        )}
         </div>
       </div>
     </div>

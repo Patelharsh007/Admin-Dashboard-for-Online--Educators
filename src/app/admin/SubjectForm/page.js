@@ -9,6 +9,7 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
     const [mediums, setMediums] = useState([]);
     const [name, setName] = useState('');
     const [notification, setNotification] = useState('');
+    const [errornotification, setErrorNotification] = useState('');
     const [isEditAllModalOpen, setIsEditAllModalOpen] = useState(false);
     const [editableSubjects, setEditableSubjects] = useState([]);
     const [currentSubject, setCurrentSubject] = useState({});
@@ -43,6 +44,7 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
             setBoards(response.data);
         } catch (error) {
             console.error("Error loading boards:", error);
+            showErrorNotification('Error loading boards');
         }
     }
 
@@ -57,6 +59,7 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
             }
         } catch (error) {
             console.error("Error loading standards:", error);
+            showErrorNotification('Error loading standards');
         }
     }
 
@@ -78,6 +81,7 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
             setStandards(sortedStandards);
         } catch (error) {
             console.error("Error loading standards sorted by board:", error);
+            showErrorNotification('Error loading standards');   
         }
     }
 
@@ -93,6 +97,7 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
             }
         } catch (error) {
             console.error("Error loading mediums:", error);
+            showErrorNotification('Error loading mediums');
         }
     }
 
@@ -104,6 +109,7 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
             setSubjects(response.data);
         } catch (error) {
             console.error("Error loading subjects:", error);
+            showErrorNotification('Error loading subjects');
         }
     }
 
@@ -111,7 +117,8 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
     async function addSubject() {
         try {
             if (!name.trim() || !standardId.trim()) {
-                alert("Please enter a valid subject name and select a standard.");
+                //alert("Please enter a valid subject name and select a standard.");
+                showErrorNotification('Please enter a valid subject name and select a standard.');
                 return;
             }
             await axios.post('/api/subjects', { name, parentref: standardId });
@@ -121,7 +128,8 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
             showNotification('Subject added successfully');
         } catch (error) {
             console.error("Error adding subject:", error);
-            showNotification('Error adding subject');
+            //showNotification('Error adding subject');
+            showErrorNotification('Error adding subject');
         }
     }
 
@@ -136,9 +144,11 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
         } catch (error) {
             console.error("Error deleting subject:", error);
             if (error.response && error.response.data && error.response.data.message) {
-                showNotification(error.response.data.message);
+                //showNotification(error.response.data.message);
+                showErrorNotification(error.response.data.message);
             } else {
-                showNotification('Error deleting subject');
+                //showNotification('Error deleting subject');
+                showErrorNotification('Error deleting subject');
             }
         }
     }
@@ -147,6 +157,13 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
         setNotification(message);
         setTimeout(() => {
             setNotification('');
+        }, 5000);
+    }
+
+    function showErrorNotification(message) {
+        setErrorNotification(message);
+        setTimeout(() => {
+            setErrorNotification('');
         }, 5000);
     }
 
@@ -195,7 +212,8 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
             setIsEditAllModalOpen(false);
         } catch (error) {
             console.error("Error editing subjects:", error);
-            showNotification('Error editing subjects');
+            //showNotification('Error editing subjects');
+            showErrorNotification('Error editing subjects');
         }
     }
 
@@ -241,7 +259,7 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                 <input
                     type="text"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => setName(e.target.value.toUpperCase())}
                     placeholder="Add new subject"
                     className="flex-1 p-2 border border-gray-300 rounded mr-2"
                 />
@@ -290,6 +308,7 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                 </button>
             </div>
             {notification && <div className="mb-4 p-2 bg-green-200 text-green-800 rounded">{notification}</div>}
+            {errornotification && <div className="mb-4 p-2 bg-red-200 text-red-800 rounded">{errornotification}</div>}
             <div className="overflow-x-auto">
                 <table className="min-w-full border-collapse">
                     <thead>
@@ -361,7 +380,7 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                         <input
                             type="text"
                             value={currentSubject.name}
-                            onChange={(e) => setCurrentSubject({ ...currentSubject, name: e.target.value })}
+                            onChange={(e) => setCurrentSubject({ ...currentSubject, name: e.target.value.toUpperCase() })}
                             className="mb-4 p-2 border border-gray-300 rounded w-full"
                         />
 
@@ -419,7 +438,8 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                             <button
                                 onClick={() => {
                                     setIsUpdateModalOpen(false);
-                                    showNotification('Update request canceled');
+                                    //showNotification('Update request cancelled');
+                                    showErrorNotification('Update request cancelled');
                                 }}
                                 className="p-2 bg-gray-400 text-white rounded mr-2 focus:outline-none"
                             >
@@ -439,7 +459,8 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                                         showNotification('Subject updated successfully');
                                     } catch (error) {
                                         console.error("Error updating subject:", error);
-                                        showNotification('Error updating subject');
+                                        //showNotification('Error updating subject');
+                                        showErrorNotification('Error updating subject');
                                     }
                                 }}
                                 className="p-2 bg-blue-500 text-white rounded focus:outline-none"
@@ -462,7 +483,8 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                             <button
                                 onClick={() => {
                                     setIsDeleteModalOpen(false);
-                                    showNotification('Delete request canceled');
+                                    //showNotification('Delete request cancelled');
+                                    showErrorNotification('Delete request cancelled');
                                 }
                                 }
                                 className="p-2 bg-gray-400 text-white rounded mr-2"
@@ -506,7 +528,7 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                                             <input
                                                 type="text"
                                                 value={subject.newName}
-                                                onChange={(e) => handleEditAllChange(subject.id, 'newName', e.target.value)}
+                                                onChange={(e) => handleEditAllChange(subject.id, 'newName', e.target.value.toUpperCase())}
                                                 className="p-2 border border-gray-300 rounded w-full"
                                             />
                                         </td>
@@ -543,7 +565,8 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                             <button
                                 onClick={() => {
                                     setIsEditAllModalOpen(false);
-                                    showNotification('Edit request cancelled');
+                                    //showNotification('Edit request cancelled');
+                                    showErrorNotification('Edit request cancelled');
                                 }
                                 }
                                 className="p-2 bg-gray-400 text-white rounded mr-2"
