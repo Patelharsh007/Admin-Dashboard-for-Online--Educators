@@ -331,8 +331,9 @@ function BoardForm({ reloadKey, onBoardChange }) {
                 <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-gray-800 bg-opacity-75">
                     <div className="bg-white p-6 rounded-lg w-3/4 max-w-4xl">
                         <h2 className="text-xl font-semibold mb-4">Edit Boards</h2>
-                        <table className="w-full border-collapse mb-4">
-                            <thead>
+                        <div className="table-container" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                            <table className="min-w-full border-collapse">
+                                <thead style={{ position: "sticky", top: 0, background: "white", 'z-index': "1" }}>
                                 <tr>
                                     <th className="border-b p-2 text-left">Board ID</th>
                                     <th className="border-b p-2 text-left">Board Name</th>
@@ -363,6 +364,7 @@ function BoardForm({ reloadKey, onBoardChange }) {
                                 ))}
                             </tbody>
                         </table>
+                        </div>
                         <div className="flex justify-between">
                             <button
                                 onClick={() => {

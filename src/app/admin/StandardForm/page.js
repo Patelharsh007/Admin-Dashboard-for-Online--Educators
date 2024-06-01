@@ -630,7 +630,7 @@ function StandardForm({ reloadKey, onStandardChange }) {
             {/* Edit All Modal */}
             {isEditAllModalOpen && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg w-2/3">
+                <div className="bg-white p-6 rounded-lg shadow-lg w-3/4 max-h-3/4">
                         <h3 className="text-xl font-semibold mb-4">Edit Standards</h3>
                         
                         <div className="mb-4">
@@ -686,8 +686,9 @@ function StandardForm({ reloadKey, onStandardChange }) {
                             </div>
                         </div>
                         
-                        <table className="w-full border-collapse">
-                            <thead>
+                        <div className="table-container" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                            <table className="min-w-full border-collapse">
+                                <thead style={{ position: "sticky", top: 0, background: "white", 'z-index': "1" }}>
                                 <tr>
                                     <th className="border-b p-2">ID</th>
                                     <th className="border-b p-2">Name</th>
@@ -744,6 +745,7 @@ function StandardForm({ reloadKey, onStandardChange }) {
                                 ))}
                             </tbody>
                         </table>
+                        </div>
                         <div className="flex justify-between mt-4">
                             <button
                                 onClick={() => {

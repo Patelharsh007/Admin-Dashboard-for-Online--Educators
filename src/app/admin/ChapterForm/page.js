@@ -896,7 +896,7 @@ function ChapterForm({ reloadKey, onChapterChange }) {
       {/* Modal for editing multiple chapters */}
       {isEditAllModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-3/4 max-h-3/4 overflow-y-auto">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-3/4 max-h-3/4">
             <h3 className="text-xl font-semibold mb-4">Edit Chapters</h3>
             <div className="mb-4">
 
@@ -907,7 +907,7 @@ function ChapterForm({ reloadKey, onChapterChange }) {
               <div className="flex justify-evenly ">
 
                 <div>
-                <label className="block mb-1">Chapter:</label>
+                  <label className="block mb-1">Chapter:</label>
                   <input
                     type="text"
                     placeholder="Search Chapter Name"
@@ -992,73 +992,75 @@ function ChapterForm({ reloadKey, onChapterChange }) {
               </div>
             </div>
 
-            <table className="min-w-full border-collapse">
-              <thead>
-                <tr>
-                  <th className="border-b p-2 text-left">Chapter ID</th>
-                  <th className="border-b p-2 text-left">Chapter Name</th>
-                  <th className="border-b p-2 text-left">Subject Name</th>
-                  <th className="border-b p-2 text-left">Standard Name</th>
-                  <th className="border-b p-2 text-left">Medium Name</th>
-                  <th className="border-b p-2 text-left">Board Name</th>
-                  <th className="border-b p-2 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {editableChapters
-                  .filter(chapter => {
-                    return (
-                      (!editAllFilterBoard || chapter.boardName === editAllFilterBoard) &&
-                      (!editAllFilterMedium || chapter.mediumName === editAllFilterMedium) &&
-                      (!editAllFilterStandard || chapter.standardName === editAllFilterStandard) &&
-                      (!editAllFilterSubject || chapter.subjectName === editAllFilterSubject) &&
-                      (!editAllFilterChapterName || chapter.chapterName.toLowerCase().includes(editAllFilterChapterName.toLowerCase()))
-                    );
-                  })
-                  .map((chapter) => (
-                    <tr key={chapter.chapterId}>
-                      <td className="border-b p-2">{chapter.chapterId}</td>
-                      <td className="border-b p-2">
-                        <input
-                          type="text"
-                          value={chapter.newName}
-                          onChange={(e) =>
-                            handleEditAllChange(chapter.chapterId, "newName", e.target.value.toUpperCase())
-                          }
-                          className="p-2 border border-gray-300 rounded w-full"
-                        />
-                      </td>
-                      <td className="border-b p-2">
-                        <select
-                          value={chapter.newSubjectId}
-                          onChange={(e) => handleEditAllChange(chapter.chapterId, 'newSubjectId', e.target.value)}
-                          className="p-2 border border-gray-300 rounded w-full"
-                        >
-                          <option value="">Select subject</option>
-                          {subjects.map((subject) => (
-                            <option key={subject.id} value={subject.id}>
-                              {`${subject.name} (${subject.boardName} - ${subject.mediumName} - ${subject.standardName})`}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
+            <div className="table-container" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+              <table className="min-w-full border-collapse">
+                <thead style={{ position: "sticky", top: 0, background: "white", 'z-index': "1" }}>
+                  <tr>
+                    <th className="border-b p-2 text-left">Chapter ID</th>
+                    <th className="border-b p-2 text-left">Chapter Name</th>
+                    <th className="border-b p-2 text-left">Subject Name</th>
+                    <th className="border-b p-2 text-left">Standard Name</th>
+                    <th className="border-b p-2 text-left">Medium Name</th>
+                    <th className="border-b p-2 text-left">Board Name</th>
+                    <th className="border-b p-2 text-left">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {editableChapters
+                    .filter(chapter => {
+                      return (
+                        (!editAllFilterBoard || chapter.boardName === editAllFilterBoard) &&
+                        (!editAllFilterMedium || chapter.mediumName === editAllFilterMedium) &&
+                        (!editAllFilterStandard || chapter.standardName === editAllFilterStandard) &&
+                        (!editAllFilterSubject || chapter.subjectName === editAllFilterSubject) &&
+                        (!editAllFilterChapterName || chapter.chapterName.toLowerCase().includes(editAllFilterChapterName.toLowerCase()))
+                      );
+                    })
+                    .map((chapter) => (
+                      <tr key={chapter.chapterId}>
+                        <td className="border-b p-2">{chapter.chapterId}</td>
+                        <td className="border-b p-2">
+                          <input
+                            type="text"
+                            value={chapter.newName}
+                            onChange={(e) =>
+                              handleEditAllChange(chapter.chapterId, "newName", e.target.value.toUpperCase())
+                            }
+                            className="p-2 border border-gray-300 rounded w-full"
+                          />
+                        </td>
+                        <td className="border-b p-2">
+                          <select
+                            value={chapter.newSubjectId}
+                            onChange={(e) => handleEditAllChange(chapter.chapterId, 'newSubjectId', e.target.value)}
+                            className="p-2 border border-gray-300 rounded w-full"
+                          >
+                            <option value="">Select subject</option>
+                            {subjects.map((subject) => (
+                              <option key={subject.id} value={subject.id}>
+                                {`${subject.name} (${subject.boardName} - ${subject.mediumName} - ${subject.standardName})`}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
 
 
-                      <td className="border-b p-2">{chapter.standardName}</td>
-                      <td className="border-b p-2">{chapter.mediumName}</td>
-                      <td className="border-b p-2">{chapter.boardName}</td>
-                      <td className="border-b p-2">
-                        <button
-                          onClick={() => handleDeleteFlagToggle(chapter.chapterId)}
-                          className={`p-2 rounded ${chapter.deleteFlag ? "bg-gray-500" : "bg-red-500"} text-white`}
-                        >
-                          {chapter.deleteFlag ? "Undo" : "Delete"}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
+                        <td className="border-b p-2">{chapter.standardName}</td>
+                        <td className="border-b p-2">{chapter.mediumName}</td>
+                        <td className="border-b p-2">{chapter.boardName}</td>
+                        <td className="border-b p-2">
+                          <button
+                            onClick={() => handleDeleteFlagToggle(chapter.chapterId)}
+                            className={`p-2 rounded ${chapter.deleteFlag ? "bg-gray-500" : "bg-red-500"} text-white`}
+                          >
+                            {chapter.deleteFlag ? "Undo" : "Delete"}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
             <div className="flex justify-between mt-4">
               <button
                 onClick={() => {

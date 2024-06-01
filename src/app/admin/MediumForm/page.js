@@ -284,11 +284,12 @@ function MediumForm({ reloadKey, onMediumChange }) {
 
             {/* Edit All Modal */}
             {isEditAllModalOpen && (
-                <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-gray-800 bg-opacity-75">
-                    <div className="bg-white p-6 rounded-lg w-3/4 max-w-4xl">
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-3/4 max-h-3/4">
                         <h2 className="text-xl font-semibold mb-4">Edit Mediums</h2>
-                        <table className="w-full border-collapse mb-4">
-                            <thead>
+                        <div className="table-container" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                            <table className="min-w-full border-collapse">
+                                <thead style={{ position: "sticky", top: 0, background: "white", 'z-index': "1" }}>
                                 <tr>
                                     <th className="border-b p-2 text-left">Medium ID</th>
                                     <th className="border-b p-2 text-left">Medium Name</th>
@@ -336,6 +337,7 @@ function MediumForm({ reloadKey, onMediumChange }) {
                                 ))}
                             </tbody>
                         </table>
+                        </div>
                         <div className="flex justify-between">
                             <button
                                 onClick={() => {

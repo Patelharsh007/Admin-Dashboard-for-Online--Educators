@@ -729,9 +729,8 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
 
             {isEditAllModalOpen && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg w-3/4 max-h-3/4 overflow-y-auto">
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-3/4 max-h-3/4">
                         <h3 className="text-xl font-semibold mb-4">Edit Subjects</h3>
-
                         <div className="mb-4">
                             {/* Filter Bar */}
                             <h5 className="text-lg font-semibold mb-4">Filters:</h5>
@@ -803,68 +802,76 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                                 </div>
                             </div>
                         </div>
-                        
-                        <table className="min-w-full border-collapse">
-                            <thead>
-                                <tr>
-                                    <th className="border-b p-2 text-left">Subject ID</th>
-                                    <th className="border-b p-2 text-left">Subject Name</th>
-                                    <th className="border-b p-2 text-left">Standard Name</th>
-                                    <th className="border-b p-2 text-left">Medium Name</th>
-                                    <th className="border-b p-2 text-left">Board Name</th>
-                                    <th className="border-b p-2 text-left">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {editableSubjects
-                                    .filter((subject) => {
-                                        return (
-                                            (!editAllFilterBoard || subject.boardName === editAllFilterBoard) &&
-                                            (!editAllFilterMedium || subject.mediumName === editAllFilterMedium) &&
-                                            (!editAllFilterStandard || subject.standardName === editAllFilterStandard) &&
-                                            (!editAllFilterSubjectName || subject.name.toLowerCase().includes(editAllFilterSubjectName.toLowerCase()))
-                                        );
-                                    })
-                                    .map((subject) => (
-                                        <tr key={subject.id}>
-                                            <td className="border-b p-2">{subject.id}</td>
-                                            <td className="border-b p-2">
-                                                <input
-                                                    type="text"
-                                                    value={subject.newName}
-                                                    onChange={(e) => handleEditAllChange(subject.id, 'newName', e.target.value.toUpperCase())}
-                                                    className="p-2 border border-gray-300 rounded w-full"
-                                                />
-                                            </td>
-                                            <td className="border-b p-2">
-                                                <select
-                                                    value={subject.newStandardId}
-                                                    onChange={(e) => handleEditAllChange(subject.id, 'newStandardId', e.target.value)}
-                                                    className="p-2 border border-gray-300 rounded w-full"
-                                                >
-                                                    <option value="">Select standard</option>
-                                                    {standards.map((standard) => (
-                                                        <option key={standard.id} value={standard.id}>
-                                                            {`${standard.name} (${standard.boardName} - ${standard.mediumName} Medium)`}
-                                                        </option>
-                                                    ))}
-                                                </select>
 
-                                            </td>
-                                            <td className="border-b p-2">{subject.mediumName}</td>
-                                            <td className="border-b p-2">{subject.boardName}</td>
-                                            <td className="border-b p-2">
-                                                <button
-                                                    onClick={() => handleDeleteFlagToggle(subject.id)}
-                                                    className={`p-2 rounded ${subject.deleteFlag ? 'bg-gray-500' : 'bg-red-500'} text-white`}
-                                                >
-                                                    {subject.deleteFlag ? 'Undo' : 'Delete'}
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                            </tbody>
-                        </table>
+                        {/* Table of subjects */}
+
+                        <div className="table-container" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                            <table className="min-w-full border-collapse">
+                                <thead style={{ position: "sticky", top: 0, background: "white", 'z-index': "1" }}>
+                                    <tr >
+                                        <th className="border-b p-2 text-left">Subject ID</th>
+                                        <th className="border-b p-2 text-left">Subject Name</th>
+                                        <th className="border-b p-2 text-left">Standard Name</th>
+                                        <th className="border-b p-2 text-left">Medium Name</th>
+                                        <th className="border-b p-2 text-left">Board Name</th>
+                                        <th className="border-b p-2 text-left">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {editableSubjects
+                                        .filter((subject) => {
+                                            return (
+                                                (!editAllFilterBoard || subject.boardName === editAllFilterBoard) &&
+                                                (!editAllFilterMedium || subject.mediumName === editAllFilterMedium) &&
+                                                (!editAllFilterStandard || subject.standardName === editAllFilterStandard) &&
+                                                (!editAllFilterSubjectName || subject.name.toLowerCase().includes(editAllFilterSubjectName.toLowerCase()))
+                                            );
+                                        })
+                                        .map((subject) => (
+                                            <tr key={subject.id}>
+                                                <td className="border-b p-2">{subject.id}</td>
+                                                <td className="border-b p-2">
+                                                    <input
+                                                        type="text"
+                                                        value={subject.newName}
+                                                        onChange={(e) => handleEditAllChange(subject.id, 'newName', e.target.value.toUpperCase())}
+                                                        className="p-2 border border-gray-300 rounded w-full"
+                                                    />
+                                                </td>
+                                                <td className="border-b p-2">
+                                                    <select
+                                                        value={subject.newStandardId}
+                                                        onChange={(e) => handleEditAllChange(subject.id, 'newStandardId', e.target.value)}
+                                                        className="p-2 border border-gray-300 rounded w-full"
+                                                    >
+                                                        <option value="">Select standard</option>
+                                                        {standards.map((standard) => (
+                                                            <option key={standard.id} value={standard.id}>
+                                                                {`${standard.name} (${standard.boardName} - ${standard.mediumName} Medium)`}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </td>
+                                                <td className="border-b p-2">{subject.mediumName}</td>
+                                                <td className="border-b p-2">{subject.boardName}</td>
+                                                <td className="border-b p-2">
+                                                    <button
+                                                        onClick={() => handleDeleteFlagToggle(subject.id)}
+                                                        className={`p-2 rounded ${subject.deleteFlag ? 'bg-gray-500' : 'bg-red-500'} text-white`}
+                                                    >
+                                                        {subject.deleteFlag ? 'Undo' : 'Delete'}
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                </tbody>
+                            </table>
+
+
+
+                        </div>
+
+                        {/* Button of cancel and Done */}
                         <div className="flex justify-between mt-4">
                             <button
                                 onClick={() => {
