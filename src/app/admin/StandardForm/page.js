@@ -24,7 +24,31 @@ function StandardForm({ reloadKey, onStandardChange }) {
     const [boardId, setBoardId] = useState("");
     const [allMediums, setAllMediums] = useState([]);
 
+    // Define new state variables for filters
+    const [filteredmediums, setfilterMediums] = useState([]);
+    const [filteredboards, setfilterBoards] = useState([]);
 
+
+    // Define state variables for filters and set initial values
+    const [standardFilters, setStandardFilters] = useState({
+        chapterName: "",
+        subjectName: "",
+        standardName: "",
+        mediumName: "",
+        boardName: "",
+    });
+
+    // Define state variable for fetched standards
+    const [fetchedStandards, setFetchedStandards] = useState([]);
+
+    // Fetch standards on component mount or when reloadKey changes
+    useEffect(() => {
+        const fetchData = async () => {
+            const response = await axios.get('/api/standards'); // Replace with your API endpoint
+            setFetchedStandards(response.data);
+        };
+        fetchData();
+    }, [reloadKey]); // Dependency array includes reloadKey
 
     useEffect(() => {
         loadStandards();
@@ -37,6 +61,17 @@ function StandardForm({ reloadKey, onStandardChange }) {
 
     useEffect(() => {
         loadAllMediums();
+    }, []);
+
+
+    // Call the new function to load all mediums during filter
+    useEffect(() => {
+        loadAllMediums();
+    }, []);
+
+    // Call the new function to load all boards during filter
+    useEffect(() => {
+        loadAllBoards();
     }, []);
 
 
@@ -220,6 +255,66 @@ function StandardForm({ reloadKey, onStandardChange }) {
         );
     }
 
+    //filter functions
+
+    // Define a new function to filter standards
+    const filterStandards = (standards) => {
+        const { standardName, mediumName, boardName } = standardFilters;
+        return standards.filter((standard) => (
+            (!standardName || standard.name.toLowerCase().includes(standardName.toLowerCase())) &&
+            (!mediumName || standard.mediumName.includes(mediumName)) &&
+            (!boardName || standard.boardName.includes(boardName))
+        ));
+    };
+
+    // Filter the fetched standard based on the current filters
+    const filteredStandards = filterStandards(fetchedStandards);
+
+    // Define a new function to handle subject name filter changes
+    const handleStandardNameChange = (e) => {
+        setStandardFilters({ ...standardFilters, standardName: e.target.value.toUpperCase() });
+    };
+
+    // Define a new function to handle medium filter changes
+    function handleMediumFilterChange(event) {
+        const selectedMedium = event.target.value;
+        setStandardFilters((prevFilters) => ({
+            ...prevFilters,
+            mediumName: selectedMedium,
+        }));
+    }
+
+    // Define a new function to handle board filter changes
+    function handleBoardFilterChange(event) {
+        const selectedBoard = event.target.value;
+        setStandardFilters((prevFilters) => ({
+            ...prevFilters,
+            boardName: selectedBoard,
+        }));
+    }
+
+    // Define a new function to load all mediums for filter  
+    async function loadAllMediums() {
+        try {
+            const response = await axios.get(`/api/mediums`);
+            setfilterMediums(response.data);
+        } catch (error) {
+            console.error("Error loading mediums:", error);
+            showErrorNotification("Error loading mediums");
+        }
+    }
+
+    // Define a new function to load all boards for filter
+    async function loadAllBoards() {
+        try {
+            const response = await axios.get(`/api/boards`);
+            setfilterBoards(response.data);
+        } catch (error) {
+            console.error("Error loading boards:", error);
+            showErrorNotification("Error loading boards");
+        }
+    }
+
 
     return (
         <div className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-lg">
@@ -274,70 +369,114 @@ function StandardForm({ reloadKey, onStandardChange }) {
             </div>
             {notification && <div className="mb-4 p-2 bg-green-200 text-green-800 rounded">{notification}</div>}
             {errornotification && <div className="mb-4 p-2 bg-red-200 text-red-800 rounded">{errornotification}</div>}
-            <table className="w-full border-collapse">
-                <thead>
-                    <tr>
-                        <th className="border-b p-2 text-left">
-                            <div className="flex items-center">
-                                Standard ID
-                                <button onClick={() => handleSort('id')} className="ml-1">
-                                    {sortBy.field === 'id' ? (sortBy.order === 'asc' ? <FaSortUp /> : <FaSortDown />) : <FaSort />}
-                                </button>
-                            </div>
-                        </th>
-                        <th className="border-b p-2 text-left">
-                            <div className="flex items-center">
-                                Standard Name
-                                <button onClick={() => handleSort('name')} className="ml-1">
-                                    {sortBy.field === 'name' ? (sortBy.order === 'asc' ? <FaSortUp /> : <FaSortDown />) : <FaSort />}
-                                </button>
-                            </div>
-                        </th>
-                        <th className="border-b p-2 text-left">Medium Name</th>
-                        <th className="border-b p-2 text-left">Board Name</th>
-                        <th className="border-b p-2 text-left">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {standards.map((standard) => (
-                        <tr key={standard.id}>
-                            <td className="border-b p-2">{standard.id}</td>
-                            <td className="border-b p-2">{standard.name}</td>
-                            <td className="border-b p-2">{standard.mediumName}</td>
-                            <td className="border-b p-2">{standard.boardName}</td>
-                            <td className="border-b p-2">
-                                <button
-                                    onClick={() => {
-                                        setCurrentStandardId(standard.id);
-                                        setCurrentStandardName(standard.name);
-                                        setCurrentMediumId(standard.parentref);
-                                        setCurrentMediumName(standard.mediumName);
-                                        setCurrentBoardName(standard.boardName);
-                                        setIsUpdateModalOpen(true);
-                                    }}
-                                    className="p-1 bg-yellow-500 text-white rounded mr-2"
-                                >
-                                    Update
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setCurrentStandardToDelete(standard.id);
-                                        setIsDeleteModalOpen(true);
-                                    }}
-                                    className="p-1 bg-red-500 text-white rounded"
-                                >
-                                    Delete
-                                </button>
-                            </td>
+
+            <div className="overflow-x-auto">
+                <div className="mb-4">
+                    <h3 className="text-xl font-semibold mb-4">Filter Standards</h3>
+                    <input
+                        type="text"
+                        placeholder="Search Standard Name"
+                        value={standardFilters.standardName}
+                        onChange={handleStandardNameChange}
+                        className="p-2 border border-gray-300 rounded mr-2"
+                    />
+                    <select
+                        value={standardFilters.boardName}
+                        onChange={handleBoardFilterChange}
+                        className="flex-1 p-2 border border-gray-300 rounded mr-2"
+                    >
+                        <option value="">All Boards</option>
+                        {/* Filter unique boards */}
+                        {Array.from(new Set(filteredboards.map(board => board.name)))
+                            .sort((a, b) => a.localeCompare(b))
+                            .map((boardName) => (
+                                <option key={boardName} value={boardName}>
+                                    {boardName}
+                                </option>
+                            ))}
+                    </select>
+                    <select
+                        value={standardFilters.mediumName}
+                        onChange={handleMediumFilterChange}
+                        className="flex-1 p-2 border border-gray-300 rounded mr-2"
+                    >
+                        <option value="">All Mediums</option>
+                        {/* Filter unique mediums */}
+                        {Array.from(new Set(filteredmediums.map(medium => medium.name)))
+                            .sort((a, b) => a.localeCompare(b))
+                            .map((mediumName) => (
+                                <option key={mediumName} value={mediumName}>
+                                    {mediumName}
+                                </option>
+                            ))}
+                    </select>
+                </div>
+
+                <table className="w-full border-collapse">
+                    <thead>
+                        <tr>
+                            <th className="border-b p-2 text-left">
+                                <div className="flex items-center">
+                                    Standard ID
+                                    <button onClick={() => handleSort('id')} className="ml-1">
+                                        {sortBy.field === 'id' ? (sortBy.order === 'asc' ? <FaSortUp /> : <FaSortDown />) : <FaSort />}
+                                    </button>
+                                </div>
+                            </th>
+                            <th className="border-b p-2 text-left">
+                                <div className="flex items-center">
+                                    Standard Name
+                                    <button onClick={() => handleSort('name')} className="ml-1">
+                                        {sortBy.field === 'name' ? (sortBy.order === 'asc' ? <FaSortUp /> : <FaSortDown />) : <FaSort />}
+                                    </button>
+                                </div>
+                            </th>
+                            <th className="border-b p-2 text-left">Medium Name</th>
+                            <th className="border-b p-2 text-left">Board Name</th>
+                            <th className="border-b p-2 text-left">Actions</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {filteredStandards.map((standard) => (
+                            <tr key={standard.id}>
+                                <td className="border-b p-2">{standard.id}</td>
+                                <td className="border-b p-2">{standard.name}</td>
+                                <td className="border-b p-2">{standard.mediumName}</td>
+                                <td className="border-b p-2">{standard.boardName}</td>
+                                <td className="border-b p-2">
+                                    <button
+                                        onClick={() => {
+                                            setCurrentStandardId(standard.id);
+                                            setCurrentStandardName(standard.name);
+                                            setCurrentMediumId(standard.parentref);
+                                            setCurrentMediumName(standard.mediumName);
+                                            setCurrentBoardName(standard.boardName);
+                                            setIsUpdateModalOpen(true);
+                                        }}
+                                        className="p-1 bg-yellow-500 text-white rounded mr-2"
+                                    >
+                                        Update
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setCurrentStandardToDelete(standard.id);
+                                            setIsDeleteModalOpen(true);
+                                        }}
+                                        className="p-1 bg-red-500 text-white rounded"
+                                    >
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
 
             {/* Update Modal */}
             {isUpdateModalOpen && (
                 <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-                <div className="bg-white flex gap-10 p-6 px-35 rounded-lg shadow-md">
+                    <div className="bg-white flex gap-10 p-6 px-35 rounded-lg shadow-md">
 
                         <div className="mb-4">
                             <p className="text-lg font-semibold mb-4">Current Details:</p>
@@ -347,70 +486,70 @@ function StandardForm({ reloadKey, onStandardChange }) {
                         </div>
 
                         <div>
-                        <h3 className="text-xl font-semibold mb-4">Update Standard</h3>
+                            <h3 className="text-xl font-semibold mb-4">Update Standard</h3>
 
-                        <h5 className="text-lg font-semibold mb-4">Standard Name:</h5>
-                        <input
-                            type="text"
-                            value={currentStandardName}
-                            onChange={(e) => setCurrentStandardName(e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded mb-4"
-                            placeholder="Standard Name"
-                        />
-
-                        <div className="mb-4">
-
-                            <h5 className="text-lg font-semibold mb-4">Select Board:</h5>
-                            <select
-                                value={boardId}
-                                onChange={(e) => setBoardId(e.target.value)}
-                                className="flex-1 p-2 border border-gray-300 rounded mr-2"
-                            >
-                                <option value="">Select Board</option>
-                                {boards.map((board) => (
-                                    <option key={board.id} value={board.id}>
-                                        {board.name}
-                                    </option>
-                                ))}
-                            </select>
-                            <br />
-                            <br />
-
-
-                            <h5 className="text-lg font-semibold mb-4">Select Medium:</h5>
-                            <select
-                                value={currentMediumId}
-                                onChange={(e) => setCurrentMediumId(e.target.value)}
+                            <h5 className="text-lg font-semibold mb-4">Standard Name:</h5>
+                            <input
+                                type="text"
+                                value={currentStandardName}
+                                onChange={(e) => setCurrentStandardName(e.target.value)}
                                 className="w-full p-2 border border-gray-300 rounded mb-4"
-                            >
-                                <option value="">Select Medium</option>
-                                {mediums.map((medium) => (
-                                    <option key={medium.id} value={medium.id}>
-                                        {medium.name}
-                                    </option>
-                                ))}
-                            </select>
+                                placeholder="Standard Name"
+                            />
 
-                        </div>
+                            <div className="mb-4">
 
-                        <div className="flex justify-between mt-4">
-                            <button
-                                onClick={() => {
-                                    setIsUpdateModalOpen(false);
-                                    //showNotification("Update Request Cancelled");
-                                    showErrorNotification("Update Request Cancelled");
-                                }}
-                                className="p-2 bg-gray-400 text-white rounded mr-2"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleUpdateStandard}
-                                className="p-2 bg-yellow-500 text-white rounded"
-                            >
-                                Update
-                            </button>
-                        </div>
+                                <h5 className="text-lg font-semibold mb-4">Select Board:</h5>
+                                <select
+                                    value={boardId}
+                                    onChange={(e) => setBoardId(e.target.value)}
+                                    className="flex-1 p-2 border border-gray-300 rounded mr-2"
+                                >
+                                    <option value="">Select Board</option>
+                                    {boards.map((board) => (
+                                        <option key={board.id} value={board.id}>
+                                            {board.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                <br />
+                                <br />
+
+
+                                <h5 className="text-lg font-semibold mb-4">Select Medium:</h5>
+                                <select
+                                    value={currentMediumId}
+                                    onChange={(e) => setCurrentMediumId(e.target.value)}
+                                    className="w-full p-2 border border-gray-300 rounded mb-4"
+                                >
+                                    <option value="">Select Medium</option>
+                                    {mediums.map((medium) => (
+                                        <option key={medium.id} value={medium.id}>
+                                            {medium.name}
+                                        </option>
+                                    ))}
+                                </select>
+
+                            </div>
+
+                            <div className="flex justify-between mt-4">
+                                <button
+                                    onClick={() => {
+                                        setIsUpdateModalOpen(false);
+                                        //showNotification("Update Request Cancelled");
+                                        showErrorNotification("Update Request Cancelled");
+                                    }}
+                                    className="p-2 bg-gray-400 text-white rounded mr-2"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleUpdateStandard}
+                                    className="p-2 bg-yellow-500 text-white rounded"
+                                >
+                                    Update
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
