@@ -335,29 +335,30 @@ function ChapterForm({ reloadKey, onChapterChange }) {
     setIsDeleteModalOpen(true);
   }
 
-  // Define a new function to handle sorting
-  function handleSort(field) {
-    const order =
-      sortBy.field === field && sortBy.order === "asc" ? "desc" : "asc";
-    setSortBy({ field, order });
-    const sortedChapters = [...chapters].sort((a, b) => {
-      if (field === "chapterId") {
-        return order === "asc" ? a.chapterId - b.chapterId : b.chapterId - a.chapterId;
-      } else {
-        const nameA = a[field].toLowerCase();
-        const nameB = b[field].toLowerCase();
-        if (nameA < nameB) return order === "asc" ? -1 : 1;
-        if (nameA > nameB) return order === "asc" ? 1 : -1;
-        return 0;
-      }
-    });
-    setChapters(sortedChapters);
-  }
+  // filtering removed as data is already filtered by board,medium,standard,ssubject
+  // // Define a new function to handle sorting
+  // function handleSort(field) {
+  //   const order =
+  //     sortBy.field === field && sortBy.order === "asc" ? "desc" : "asc";
+  //   setSortBy({ field, order });
+  //   const sortedChapters = [...chapters].sort((a, b) => {
+  //     if (field === "chapterId") {
+  //       return order === "asc" ? a.chapterId - b.chapterId : b.chapterId - a.chapterId;
+  //     } else {
+  //       const nameA = a[field].toLowerCase();
+  //       const nameB = b[field].toLowerCase();
+  //       if (nameA < nameB) return order === "asc" ? -1 : 1;
+  //       if (nameA > nameB) return order === "asc" ? 1 : -1;
+  //       return 0;
+  //     }
+  //   });
+  //   setChapters(sortedChapters);
+  // }
 
 
   // Define a new function to handle chapter name filter changes
   const handleChapterNameChange = (e) => {
-    setChapterFilters({ ...chapterFilters, chapterName: e.target.value });
+    setChapterFilters({ ...chapterFilters, chapterName: e.target.value.toUpperCase() });
   };
 
 
@@ -480,7 +481,7 @@ function ChapterForm({ reloadKey, onChapterChange }) {
 
   // Function to handle changes in the chapter name filter for edit all modal
   const handleEditAllFilterChapterNameChange = (event) => {
-    setEditAllFilterChapterName(event.target.value);
+    setEditAllFilterChapterName(event.target.value.toUpperCase());
   };
 
 
@@ -641,7 +642,7 @@ function ChapterForm({ reloadKey, onChapterChange }) {
             <tr>
               <th className="border-b p-2 text-left">
                 Chapter ID
-                <button onClick={() => handleSort("chapterId")}>
+                {/* <button onClick={() => handleSort("chapterId")}>
                   {sortBy.field === "chapterId" ? (
                     sortBy.order === "asc" ? (
                       <FaSortUp />
@@ -651,11 +652,11 @@ function ChapterForm({ reloadKey, onChapterChange }) {
                   ) : (
                     <FaSort />
                   )}
-                </button>
+                </button> */}
               </th>
               <th className="border-b p-2 text-left">
                 Chapter Name
-                <button onClick={() => handleSort("chapterName")}>
+                {/* <button onClick={() => handleSort("chapterName")}>
                   {sortBy.field === "chapterName" ? (
                     sortBy.order === "asc" ? (
                       <FaSortUp />
@@ -665,7 +666,7 @@ function ChapterForm({ reloadKey, onChapterChange }) {
                   ) : (
                     <FaSort />
                   )}
-                </button>
+                </button> */}
               </th>
               <th className="border-b p-2 text-left">Subject Name</th>
               <th className="border-b p-2 text-left">Standard Name</th>
@@ -906,6 +907,7 @@ function ChapterForm({ reloadKey, onChapterChange }) {
               <div className="flex justify-evenly ">
 
                 <div>
+                <label className="block mb-1">Chapter:</label>
                   <input
                     type="text"
                     placeholder="Search Chapter Name"

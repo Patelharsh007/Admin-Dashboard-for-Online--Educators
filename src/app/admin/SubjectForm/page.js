@@ -27,6 +27,12 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
     const [filteredmediums, setfilterMediums] = useState([]);
     const [filteredboards, setfilterBoards] = useState([]);
 
+    // Define state variables for edit all modal
+    const [editAllFilterBoard, setEditAllFilterBoard] = useState("");
+    const [editAllFilterMedium, setEditAllFilterMedium] = useState("");
+    const [editAllFilterStandard, setEditAllFilterStandard] = useState("");
+    const [editAllFilterSubjectName, setEditAllFilterSubjectName] = useState("");
+
 
     // Define state variables for filters and set initial values
     const [subjectFilters, setSubjectFilters] = useState({
@@ -36,7 +42,7 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
         mediumName: "",
         boardName: "",
     });
-    
+
 
     // Define state variable for fetched chapters
     const [fetchedSubjects, setFetchedSubjects] = useState([]);
@@ -83,6 +89,13 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
     useEffect(() => {
         loadAllBoards();
     }, []);
+
+    // Call the new function to  boards during filter
+    useEffect(() => {
+        if (isEditAllModalOpen) {
+            loadStandardsSortedByBoard();
+        }
+    }, [isEditAllModalOpen]);
 
     async function loadBoards() {
         try {
@@ -273,25 +286,25 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
         setIsDeleteModalOpen(true);
     }
 
-    function handleSort(field) {
-        const order = sortBy.field === field && sortBy.order === 'asc' ? 'desc' : 'asc';
-        setSortBy({ field, order });
-        const sortedSubjects = [...subjects].sort((a, b) => {
-            if (field === 'id') {
-                return order === 'asc' ? a.id - b.id : b.id - a.id;
-            } else {
-                const nameA = a[field].toLowerCase();
-                const nameB = b[field].toLowerCase();
-                if (nameA < nameB) return order === 'asc' ? -1 : 1;
-                if (nameA > nameB) return order === 'asc' ? 1 : -1;
-                return 0;
-            }
-        });
-        setSubjects(sortedSubjects);
-    }
+    // function handleSort(field) {
+    //     const order = sortBy.field === field && sortBy.order === 'asc' ? 'desc' : 'asc';
+    //     setSortBy({ field, order });
+    //     const sortedSubjects = [...subjects].sort((a, b) => {
+    //         if (field === 'id') {
+    //             return order === 'asc' ? a.id - b.id : b.id - a.id;
+    //         } else {
+    //             const nameA = a[field].toLowerCase();
+    //             const nameB = b[field].toLowerCase();
+    //             if (nameA < nameB) return order === 'asc' ? -1 : 1;
+    //             if (nameA > nameB) return order === 'asc' ? 1 : -1;
+    //             return 0;
+    //         }
+    //     });
+    //     setSubjects(sortedSubjects);
+    // }
 
 
-    // TRy
+
 
     // Define a new function to filter chapters based on the current filters
     const filterSubjects = (subjects) => {
@@ -309,19 +322,8 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
 
     // Define a new function to handle subject name filter changes
     const handleSubjectNameChange = (e) => {
-        setSubjectFilters({ ...subjectFilters, subjectName: e.target.value });
+        setSubjectFilters({ ...subjectFilters, subjectName: e.target.value.toUpperCase() });
     };
-
-
-    // Define a new function to handle subject filter changes
-    //   const handleSubjectFilterChange = (event) => {
-    //     // Update the subject filter value
-    //     const selectedSubject = event.target.value;
-    //     setChapterFilters((prevFilters) => ({
-    //       ...prevFilters,
-    //       subjectName: selectedSubject,
-    //     }));
-    //   };
 
     // Define a new function to handle standard filter changes
     function handleStandardFilterChange(event) {
@@ -384,7 +386,26 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
         }
     }
 
-    // End rry
+    // Function to handle changes in the board filter for edit all modal
+    const handleEditAllFilterBoardChange = (event) => {
+        setEditAllFilterBoard(event.target.value);
+    };
+
+    // Function to handle changes in the medium filter for edit all modal
+    const handleEditAllFilterMediumChange = (event) => {
+        setEditAllFilterMedium(event.target.value);
+    };
+
+    // Function to handle changes in the standard filter for edit all modal
+    const handleEditAllFilterStandardChange = (event) => {
+        setEditAllFilterStandard(event.target.value);
+    };
+
+
+    // Function to handle changes in the chapter name filter for edit all modal
+    const handleEditAllFilterSubjectNameChange = (event) => {
+        setEditAllFilterSubjectName(event.target.value.toUpperCase());
+    };
 
 
 
@@ -547,15 +568,15 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                         <tr>
                             <th className="border-b p-2 text-left">
                                 Subject ID
-                                <button onClick={() => handleSort('id')}>
+                                {/* <button onClick={() => handleSort('id')}>
                                     {sortBy.field === 'id' ? (sortBy.order === 'asc' ? <FaSortUp /> : <FaSortDown />) : <FaSort />}
-                                </button>
+                                </button> */}
                             </th>
                             <th className="border-b p-2 text-left">
                                 Subject Name
-                                <button onClick={() => handleSort('name')}>
+                                {/* <button onClick={() => handleSort('name')}>
                                     {sortBy.field === 'name' ? (sortBy.order === 'asc' ? <FaSortUp /> : <FaSortDown />) : <FaSort />}
-                                </button>
+                                </button> */}
                             </th>
                             <th className="border-b p-2 text-left">Standard Name</th>
                             <th className="border-b p-2 text-left">Medium Name</th>
@@ -741,6 +762,82 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
                     <div className="bg-white p-6 rounded-lg shadow-lg w-3/4 max-h-3/4 overflow-y-auto">
                         <h3 className="text-xl font-semibold mb-4">Edit Subjects</h3>
+
+                        <div className="mb-4">
+
+
+                            {/* Filter Bar */}
+                            <h5 className="text-lg font-semibold mb-4">Filters:</h5>
+
+                            <div className="flex justify-evenly ">
+
+                                <div>
+                                    <label className="block mb-1">Subject:</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Search Subject Name"
+                                        value={editAllFilterSubjectName}
+                                        onChange={handleEditAllFilterSubjectNameChange}
+                                        className="p-2 border border-gray-300 rounded mr-2"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label htmlFor="editAllFilterBoard" className="block mb-1">Board:</label>
+                                    <select
+                                        id="editAllFilterBoard"
+                                        value={editAllFilterBoard}
+                                        onChange={handleEditAllFilterBoardChange}
+                                        className="p-2 border border-gray-300 rounded w-full"
+                                    >
+                                        <option value="" slected>All Boards</option>
+                                        {filteredboards.map(board => (
+                                            <option key={board.id} value={board.name}>{board.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label htmlFor="editAllFilterMedium" className="block mb-1">Medium:</label>
+                                    <select
+                                        id="editAllFilterMedium"
+                                        value={editAllFilterMedium}
+                                        onChange={handleEditAllFilterMediumChange}
+                                        className="p-2 border border-gray-300 rounded w-full"
+                                    >
+                                        <option value="">All Mediums</option>
+                                        {[...new Set(filteredmediums.map(medium => medium.name))]
+                                            .sort()
+                                            .map(mediumName => (
+                                                <option key={mediumName} value={mediumName}>
+                                                    {mediumName}
+                                                </option>
+                                            ))}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label htmlFor="editAllFilterStandard" className="block mb-1">Standard:</label>
+                                    <select
+                                        id="editAllFilterStandard"
+                                        value={editAllFilterStandard}
+                                        onChange={handleEditAllFilterStandardChange}
+                                        className="p-2 border border-gray-300 rounded w-full"
+                                    >
+                                        <option value="">All Standards</option>
+                                        {[...new Set(filteredstandards.map(standard => standard.name))]
+                                            .sort()
+                                            .map(standardName => (
+                                                <option key={standardName} value={standardName}>
+                                                    {standardName}
+                                                </option>
+                                            ))}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+
                         <table className="min-w-full border-collapse">
                             <thead>
                                 <tr>
@@ -753,50 +850,63 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {editableSubjects.map((subject) => (
-                                    <tr key={subject.id}>
-                                        <td className="border-b p-2">{subject.id}</td>
-                                        <td className="border-b p-2">
-                                            <input
-                                                type="text"
-                                                value={subject.newName}
-                                                onChange={(e) => handleEditAllChange(subject.id, 'newName', e.target.value.toUpperCase())}
-                                                className="p-2 border border-gray-300 rounded w-full"
-                                            />
-                                        </td>
-                                        <td className="border-b p-2">
-                                            <select
-                                                value={subject.newStandardId}
-                                                onChange={(e) => handleEditAllChange(subject.id, 'newStandardId', e.target.value)}
-                                                className="p-2 border border-gray-300 rounded w-full"
-                                            >
-                                                <option value="">Select standard</option>
-                                                {standards.map((standard) => (
-                                                    <option key={standard.id} value={standard.id}>
-                                                        {`${standard.name} (${standard.boardName} - ${standard.mediumName} Medium)`}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                {editableSubjects
+                                    .filter((subject) => {
+                                        return (
+                                            (!editAllFilterBoard || subject.boardName === editAllFilterBoard) &&
+                                            (!editAllFilterMedium || subject.mediumName === editAllFilterMedium) &&
+                                            (!editAllFilterStandard || subject.standardName === editAllFilterStandard) &&
+                                            (!editAllFilterSubjectName || subject.name.toLowerCase().includes(editAllFilterSubjectName.toLowerCase()))
+                                        );
+                                    })
+                                    .map((subject) => (
+                                        <tr key={subject.id}>
+                                            <td className="border-b p-2">{subject.id}</td>
+                                            <td className="border-b p-2">
+                                                <input
+                                                    type="text"
+                                                    value={subject.newName}
+                                                    onChange={(e) => handleEditAllChange(subject.id, 'newName', e.target.value.toUpperCase())}
+                                                    className="p-2 border border-gray-300 rounded w-full"
+                                                />
+                                            </td>
+                                            <td className="border-b p-2">
+                                                <select
+                                                    value={subject.newStandardId}
+                                                    onChange={(e) => handleEditAllChange(subject.id, 'newStandardId', e.target.value)}
+                                                    className="p-2 border border-gray-300 rounded w-full"
+                                                >
+                                                    <option value="">Select standard</option>
+                                                    {standards.map((standard) => (
+                                                        <option key={standard.id} value={standard.id}>
+                                                            {`${standard.name} (${standard.boardName} - ${standard.mediumName} Medium)`}
+                                                        </option>
+                                                    ))}
+                                                </select>
 
-                                        </td>
-                                        <td className="border-b p-2">{subject.mediumName}</td>
-                                        <td className="border-b p-2">{subject.boardName}</td>
-                                        <td className="border-b p-2">
-                                            <button
-                                                onClick={() => handleDeleteFlagToggle(subject.id)}
-                                                className={`p-2 rounded ${subject.deleteFlag ? 'bg-gray-500' : 'bg-red-500'} text-white`}
-                                            >
-                                                {subject.deleteFlag ? 'Undo' : 'Delete'}
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
+                                            </td>
+                                            <td className="border-b p-2">{subject.mediumName}</td>
+                                            <td className="border-b p-2">{subject.boardName}</td>
+                                            <td className="border-b p-2">
+                                                <button
+                                                    onClick={() => handleDeleteFlagToggle(subject.id)}
+                                                    className={`p-2 rounded ${subject.deleteFlag ? 'bg-gray-500' : 'bg-red-500'} text-white`}
+                                                >
+                                                    {subject.deleteFlag ? 'Undo' : 'Delete'}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
                             </tbody>
                         </table>
                         <div className="flex justify-between mt-4">
                             <button
                                 onClick={() => {
                                     setIsEditAllModalOpen(false);
+                                    setEditAllFilterBoard('')
+                                    setEditAllFilterMedium('')
+                                    setEditAllFilterStandard('')
+                                    setEditAllFilterSubjectName('')
                                     //showNotification('Edit request cancelled');
                                     showErrorNotification('Edit request cancelled');
                                 }
