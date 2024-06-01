@@ -16,9 +16,38 @@ function BoardForm({ reloadKey, onBoardChange }) {
     const [editableBoards, setEditableBoards] = useState([]);
     const [sortBy, setSortBy] = useState({ field: '', order: '' });
 
+    const [boardFilters, setBoardFilters] = useState({
+        chapterName: "",
+        subjectName: "",
+        standardName: "",
+        mediumName: "",
+        boardName: "",
+    });
+
+     // Define state variables for edit all modal
+     const [editAllFilterBoardName, setEditAllFilterBoardName] = useState("");
+
+    // Define state variable for fetched board
+    const [fetchedBoards, setFetchedBoards] = useState([]);
+
+    // Fetch board on component mount or when reloadKey changes
+    useEffect(() => {
+        const fetchData = async () => {
+            const response = await axios.get('/api/boards'); // Replace with your API endpoint
+            setFetchedBoards(response.data);
+        };
+        fetchData();
+    }, [reloadKey]); // Dependency array includes reloadKey
+
     useEffect(() => {
         loadBoards();
     }, [reloadKey]); // Reload when reloadKey changes
+
+    useEffect(() => {
+        if (isEditModalOpen) {
+            loadBoards();
+        }
+    }, [isEditModalOpen]);
 
     async function loadBoards() {
         try {
@@ -164,6 +193,26 @@ function BoardForm({ reloadKey, onBoardChange }) {
         }, 5000);
     }
 
+    // Define a new function to filter boards
+    const filterBoards = (boards) => {
+        const { boardName } = boardFilters;
+        return boards.filter((board) => (
+            (!boardName || board.name.toLowerCase().includes(boardName.toLowerCase()))
+        ));
+    };
+
+    // Filter the fetched boards based on the current filters
+    const filteredBoards = filterBoards(fetchedBoards);
+
+    const handleBoardNameChange = (e) => {
+        setBoardFilters({ ...boardFilters, boardName: e.target.value.toUpperCase() });
+    };
+
+     // Function to handle changes in the board name filter for edit all modal
+     const handleEditAllFilterBoardNameChange = (event) => {
+        setEditAllFilterBoardName(event.target.value.toUpperCase());
+    };
+
     return (
         <div className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-lg">
             <h2 className="text-2xl font-semibold mb-4 flex justify-between">
@@ -195,100 +244,115 @@ function BoardForm({ reloadKey, onBoardChange }) {
             </div>
             {notification && <div className="mb-4 p-2 bg-green-200 text-green-800 rounded">{notification}</div>}
             {errornotification && <div className="mb-4 p-2 bg-red-200 text-red-800 rounded">{errornotification}</div>}
-            <table className="w-full border-collapse">
-                <thead>
-                    <tr>
-                        <th className="border-b p-2 text-left">
-                            <div className="flex items-center">
-                                Board ID
-                                <button onClick={() => handleSort('id')} className="ml-1">
-                                    {sortBy.field === 'id' ? (sortBy.order === 'asc' ? <FaSortUp /> : <FaSortDown />) : <FaSort />}
-                                </button>
-                            </div>
-                        </th>
-                        <th className="border-b p-2 text-left">
-                            <div className="flex items-center">
-                                Board Name
-                                <button onClick={() => handleSort('name')} className="ml-1">
-                                    {sortBy.field === 'name' ? (sortBy.order === 'asc' ? <FaSortUp /> : <FaSortDown />) : <FaSort />}
-                                </button>
-                            </div>
-                        </th>
-                        <th className="border-b p-2 text-left">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {boards.map((board) => (
-                        <tr key={board.id}>
-                            <td className="border-b p-2">{board.id}</td>
-                            <td className="border-b p-2">{board.name}</td>
-                            <td className="border-b p-2">
-                                <button
-                                    onClick={() => updateBoard(board.id, board.name)}
-                                    className="p-1 bg-yellow-500 text-white rounded mr-2"
-                                >
-                                    Update
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setCurrentBoardName(board.name);
-                                        setCurrentBoardToDelete(board);
-                                        setIsDeleteModalOpen(true);
-                                    }}
-                                    className="p-1 bg-red-500 text-white rounded"
-                                >
-                                    Delete
-                                </button>
-                            </td>
+
+            <div className="overflow-x-auto">
+                <div className="mb-4">
+                    <h3 className="text-xl font-semibold mb-4">Filter Boards</h3>
+                    <input
+                        type="text"
+                        placeholder="Search Board Name"
+                        value={boardFilters.boardName}
+                        onChange={handleBoardNameChange}
+                        className="p-2 border border-gray-300 rounded mr-2"
+                    />
+
+                </div>
+                <table className="w-full border-collapse">
+                    <thead>
+                        <tr>
+                            <th className="border-b p-2 text-left">
+                                <div className="flex items-center">
+                                    Board ID
+                                    <button onClick={() => handleSort('id')} className="ml-1">
+                                        {sortBy.field === 'id' ? (sortBy.order === 'asc' ? <FaSortUp /> : <FaSortDown />) : <FaSort />}
+                                    </button>
+                                </div>
+                            </th>
+                            <th className="border-b p-2 text-left">
+                                <div className="flex items-center">
+                                    Board Name
+                                    <button onClick={() => handleSort('name')} className="ml-1">
+                                        {sortBy.field === 'name' ? (sortBy.order === 'asc' ? <FaSortUp /> : <FaSortDown />) : <FaSort />}
+                                    </button>
+                                </div>
+                            </th>
+                            <th className="border-b p-2 text-left">Actions</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {filteredBoards.map((board) => (
+                            <tr key={board.id}>
+                                <td className="border-b p-2">{board.id}</td>
+                                <td className="border-b p-2">{board.name}</td>
+                                <td className="border-b p-2">
+                                    <button
+                                        onClick={() => updateBoard(board.id, board.name)}
+                                        className="p-1 bg-yellow-500 text-white rounded mr-2"
+                                    >
+                                        Update
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setCurrentBoardName(board.name);
+                                            setCurrentBoardToDelete(board);
+                                            setIsDeleteModalOpen(true);
+                                        }}
+                                        className="p-1 bg-red-500 text-white rounded"
+                                    >
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
             {/* Update Board Modal */}
             {isUpdateModalOpen && (
                 <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-                <div className="bg-white flex gap-10 p-6 px-35 rounded-lg shadow-md">
-                    <div className="mb-4">
-                        <p className="text-lg font-semibold mb-4">Current Details:</p>
-                        <p>Board Name: {currentBoardName}</p>
+                    <div className="bg-white flex gap-10 p-6 px-35 rounded-lg shadow-md">
+                        <div className="mb-4">
+                            <p className="text-lg font-semibold mb-4">Current Details:</p>
+                            <p>Board Name: {currentBoardName}</p>
 
-                    </div>
-
-                    <div>
-                    <h3 className="text-xl font-semibold mb-4">Update Board</h3>
-
-                    
-                    <h5 className="text-lg font-semibold mb-4">Board Name:</h5>
-                        
-                        <input
-                            type="text"
-                            value={currentBoardName}
-                            onChange={(e) => setCurrentBoardName(e.target.value)}
-                            placeholder="Enter new board name"
-                            className="w-full p-2 border border-gray-300 rounded mb-4"
-                        />
-                        <div className="flex justify-between">
-                            <button
-                                onClick={() => {
-                                    setIsUpdateModalOpen(false);
-                                    setCurrentBoardToDelete(null);
-                                    //showNotification('Update request cancelled');
-                                    showErrorNotification('Update request cancelled');
-                                }}
-                                className="p-2 bg-gray-400 text-white rounded"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={() => {
-                                    handleUpdateBoard(currentBoardName);
-                                    setIsUpdateModalOpen(false);
-                                }}
-                                className="p-2 bg-yellow-500 text-white rounded"
-                            >
-                                Update
-                            </button>
                         </div>
+
+                        <div>
+                            <h3 className="text-xl font-semibold mb-4">Update Board</h3>
+
+
+                            <h5 className="text-lg font-semibold mb-4">Board Name:</h5>
+
+                            <input
+                                type="text"
+                                value={currentBoardName}
+                                onChange={(e) => setCurrentBoardName(e.target.value)}
+                                placeholder="Enter new board name"
+                                className="w-full p-2 border border-gray-300 rounded mb-4"
+                            />
+                            <div className="flex justify-between">
+                                <button
+                                    onClick={() => {
+                                        setIsUpdateModalOpen(false);
+                                        setCurrentBoardToDelete(null);
+                                        //showNotification('Update request cancelled');
+                                        showErrorNotification('Update request cancelled');
+                                    }}
+                                    className="p-2 bg-gray-400 text-white rounded"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        handleUpdateBoard(currentBoardName);
+                                        setIsUpdateModalOpen(false);
+                                    }}
+                                    className="p-2 bg-yellow-500 text-white rounded"
+                                >
+                                    Update
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -330,40 +394,65 @@ function BoardForm({ reloadKey, onBoardChange }) {
             {isEditModalOpen && (
                 <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-gray-800 bg-opacity-75">
                     <div className="bg-white p-6 rounded-lg w-3/4 max-w-4xl">
-                        <h2 className="text-xl font-semibold mb-4">Edit Boards</h2>
+                        <h3 className="text-xl font-semibold mb-4">Edit Boards</h3>
+
+                        <div className="mb-4">
+                            {/* Filter Bar */}
+                            <h5 className="text-lg font-semibold mb-4">Filters:</h5>
+
+                            <div className="flex">
+
+                                <div>
+                                    <label className="block mb-1">Board:</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Search Board Name"
+                                        value={editAllFilterBoardName}
+                                        onChange={handleEditAllFilterBoardNameChange}
+                                        className="p-2 border border-gray-300 rounded mr-2"
+                                    />
+                                </div>
+                            </div>
+                        </div>
                         <div className="table-container" style={{ maxHeight: '300px', overflowY: 'auto' }}>
                             <table className="min-w-full border-collapse">
                                 <thead style={{ position: "sticky", top: 0, background: "white", 'z-index': "1" }}>
-                                <tr>
-                                    <th className="border-b p-2 text-left">Board ID</th>
-                                    <th className="border-b p-2 text-left">Board Name</th>
-                                    <th className="border-b p-2 text-left">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {editableBoards.map(board => (
-                                    <tr key={board.id}>
-                                        <td className="border-b p-2">{board.id}</td>
-                                        <td className="border-b p-2">
-                                            <input
-                                                type="text"
-                                                value={board.name}
-                                                onChange={(e) => handleEditChange(board.id, e.target.value)}
-                                                className="w-full p-2 border border-gray-300 rounded"
-                                            />
-                                        </td>
-                                        <td className="border-b p-2">
-                                            <button
-                                                onClick={() => handleDeleteToggle(board.id)}
-                                                className={`p-1 ${board.toDelete ? 'bg-gray-500' : 'bg-red-500'} text-white rounded`}
-                                            >
-                                                {board.toDelete ? 'Undo' : 'Delete'}
-                                            </button>
-                                        </td>
+                                    <tr>
+                                        <th className="border-b p-2 text-left">Board ID</th>
+                                        <th className="border-b p-2 text-left">Board Name</th>
+                                        <th className="border-b p-2 text-left">Actions</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {editableBoards
+                                    .filter((board) => {
+                                        return (
+                                            (!editAllFilterBoardName || board.name.toLowerCase().includes(editAllFilterBoardName.toLowerCase()))
+                                        );
+                                    })
+                                    .map(board => (
+                                        <tr key={board.id}>
+                                            <td className="border-b p-2">{board.id}</td>
+                                            <td className="border-b p-2">
+                                                <input
+                                                    type="text"
+                                                    value={board.name}
+                                                    onChange={(e) => handleEditChange(board.id, e.target.value)}
+                                                    className="w-full p-2 border border-gray-300 rounded"
+                                                />
+                                            </td>
+                                            <td className="border-b p-2">
+                                                <button
+                                                    onClick={() => handleDeleteToggle(board.id)}
+                                                    className={`p-1 ${board.toDelete ? 'bg-gray-500' : 'bg-red-500'} text-white rounded`}
+                                                >
+                                                    {board.toDelete ? 'Undo' : 'Delete'}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                         <div className="flex justify-between">
                             <button

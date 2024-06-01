@@ -274,7 +274,7 @@ function MediumForm({ reloadKey, onMediumChange }) {
         setEditAllFilterBoard(event.target.value);
     };
 
-    // Function to handle changes in the chapter name filter for edit all modal
+    // Function to handle changes in the medium name filter for edit all modal
     const handleEditAllFilterMediumNameChange = (event) => {
         setEditAllFilterMediumName(event.target.value.toUpperCase());
     };
