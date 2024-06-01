@@ -44,10 +44,10 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
     });
 
 
-    // Define state variable for fetched chapters
+    // Define state variable for fetched subjects
     const [fetchedSubjects, setFetchedSubjects] = useState([]);
 
-    // Fetch chapters on component mount or when reloadKey changes
+    // Fetch subjects on component mount or when reloadKey changes
     useEffect(() => {
         const fetchData = async () => {
             const response = await axios.get('/api/subjects'); // Replace with your API endpoint
@@ -490,7 +490,7 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                         className="flex-1 p-2 border border-gray-300 rounded mr-2"
                     >
                         <option value="">All Boards</option>
-                        {/* Filter unique mediums */}
+                        {/* Filter unique boards */}
                         {Array.from(new Set(filteredboards.map(board => board.name)))
                             .sort((a, b) => a.localeCompare(b))
                             .map((boardName) => (
@@ -733,8 +733,6 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                         <h3 className="text-xl font-semibold mb-4">Edit Subjects</h3>
 
                         <div className="mb-4">
-
-
                             {/* Filter Bar */}
                             <h5 className="text-lg font-semibold mb-4">Filters:</h5>
 
@@ -805,8 +803,7 @@ function SubjectForm({ reloadKey, onSubjectChange }) {
                                 </div>
                             </div>
                         </div>
-
-
+                        
                         <table className="min-w-full border-collapse">
                             <thead>
                                 <tr>

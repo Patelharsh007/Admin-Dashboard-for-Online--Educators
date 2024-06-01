@@ -28,6 +28,11 @@ function StandardForm({ reloadKey, onStandardChange }) {
     const [filteredmediums, setfilterMediums] = useState([]);
     const [filteredboards, setfilterBoards] = useState([]);
 
+    // Define state variables for edit all modal
+    const [editAllFilterBoard, setEditAllFilterBoard] = useState("");
+    const [editAllFilterMedium, setEditAllFilterMedium] = useState("");
+    const [editAllFilterStandardName, setEditAllFilterStandardName] = useState("");
+
 
     // Define state variables for filters and set initial values
     const [standardFilters, setStandardFilters] = useState({
@@ -59,11 +64,6 @@ function StandardForm({ reloadKey, onStandardChange }) {
         loadMediums(boardId);
     }, [boardId]);
 
-    useEffect(() => {
-        loadAllMediums();
-    }, []);
-
-
     // Call the new function to load all mediums during filter
     useEffect(() => {
         loadAllMediums();
@@ -73,6 +73,12 @@ function StandardForm({ reloadKey, onStandardChange }) {
     useEffect(() => {
         loadAllBoards();
     }, []);
+
+    useEffect(() => {
+        if (isEditAllModalOpen) {
+            loadMediumsSortedByBoard();
+        }
+    }, [isEditAllModalOpen]);
 
 
     async function loadStandards() {
@@ -103,10 +109,29 @@ function StandardForm({ reloadKey, onStandardChange }) {
                 const response = await axios.get(`/api/mediums/${boardId}`);
                 setMediums(response.data);
             } else {
-                setMediums([]);
+                const response = await axios.get("/api/mediums");
+                setMediums(response.data);
             }
         } catch (error) {
             console.error("Error loading mediums:", error);
+            showErrorNotification('Error loading mediums');
+        }
+    }
+
+    async function loadMediumsSortedByBoard() {
+        try {
+            const response = await axios.get("/api/mediums");
+            const sortedMediums = response.data.sort((a, b) => {
+                // Sort by boardName
+                const boardComparison = a.boardName.localeCompare(b.boardName);
+                if (boardComparison !== 0) return boardComparison;
+    
+                // Sort by mediumName
+                return a.mediumName.localeCompare(b.mediumName);
+            });
+            setMediums(sortedMediums);
+        } catch (error) {
+            console.error("Error loading mediums sorted by board:", error);
             showErrorNotification('Error loading mediums');
         }
     }
@@ -314,6 +339,22 @@ function StandardForm({ reloadKey, onStandardChange }) {
             showErrorNotification("Error loading boards");
         }
     }
+
+
+    // Function to handle changes in the board filter for edit all modal
+    const handleEditAllFilterBoardChange = (event) => {
+        setEditAllFilterBoard(event.target.value);
+    };
+
+    // Function to handle changes in the medium filter for edit all modal
+    const handleEditAllFilterMediumChange = (event) => {
+        setEditAllFilterMedium(event.target.value);
+    };
+
+    // Function to handle changes in the chapter name filter for edit all modal
+    const handleEditAllFilterStandardNameChange = (event) => {
+        setEditAllFilterStandardName(event.target.value.toUpperCase());
+    };
 
 
     return (
@@ -591,6 +632,60 @@ function StandardForm({ reloadKey, onStandardChange }) {
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
                     <div className="bg-white p-6 rounded-lg shadow-lg w-2/3">
                         <h3 className="text-xl font-semibold mb-4">Edit Standards</h3>
+                        
+                        <div className="mb-4">
+                            {/* Filter Bar */}
+                            <h5 className="text-lg font-semibold mb-4">Filters:</h5>
+
+                            <div className="flex justify-evenly ">
+
+                                <div>
+                                    <label className="block mb-1">Standard:</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Search Standard Name"
+                                        value={editAllFilterStandardName}
+                                        onChange={handleEditAllFilterStandardNameChange}
+                                        className="p-2 border border-gray-300 rounded mr-2"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label htmlFor="editAllFilterBoard" className="block mb-1">Board:</label>
+                                    <select
+                                        id="editAllFilterBoard"
+                                        value={editAllFilterBoard}
+                                        onChange={handleEditAllFilterBoardChange}
+                                        className="p-2 border border-gray-300 rounded w-full"
+                                    >
+                                        <option value="" slected>All Boards</option>
+                                        {filteredboards.map(board => (
+                                            <option key={board.id} value={board.name}>{board.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label htmlFor="editAllFilterMedium" className="block mb-1">Medium:</label>
+                                    <select
+                                        id="editAllFilterMedium"
+                                        value={editAllFilterMedium}
+                                        onChange={handleEditAllFilterMediumChange}
+                                        className="p-2 border border-gray-300 rounded w-full"
+                                    >
+                                        <option value="">All Mediums</option>
+                                        {[...new Set(filteredmediums.map(medium => medium.name))]
+                                            .sort()
+                                            .map(mediumName => (
+                                                <option key={mediumName} value={mediumName}>
+                                                    {mediumName}
+                                                </option>
+                                            ))}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <table className="w-full border-collapse">
                             <thead>
                                 <tr>
@@ -602,7 +697,15 @@ function StandardForm({ reloadKey, onStandardChange }) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {editableStandards.map((standard) => (
+                                {editableStandards
+                                .filter((standard) => {
+                                    return (
+                                        (!editAllFilterBoard || standard.boardName === editAllFilterBoard) &&
+                                        (!editAllFilterMedium || standard.mediumName === editAllFilterMedium) &&
+                                        (!editAllFilterStandardName || standard.name.toLowerCase().includes(editAllFilterStandardName.toLowerCase()))
+                                    );
+                                })
+                                .map((standard) => (
                                     <tr key={standard.id}>
                                         <td className="border-b p-2">{standard.id}</td>
                                         <td className="border-b p-2">
@@ -620,7 +723,7 @@ function StandardForm({ reloadKey, onStandardChange }) {
                                                 className="w-full p-2 border border-gray-300 rounded"
                                             >
                                                 <option value="">Select Medium</option>
-                                                {allMediums.map((medium) => (
+                                                {filteredmediums.map((medium) => (
                                                     <option key={medium.id} value={medium.id}>
                                                         {`${medium.name} - (${medium.boardName})`}
                                                     </option>
