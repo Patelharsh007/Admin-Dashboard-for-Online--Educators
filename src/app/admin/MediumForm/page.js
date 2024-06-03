@@ -168,22 +168,23 @@ function MediumForm({ reloadKey, onMediumChange }) {
         }, 5000);
     }
 
-    function handleSort(field) {
-        const order = sortBy.field === field && sortBy.order === 'asc' ? 'desc' : 'asc';
-        setSortBy({ field, order });
-        const sortedMediums = [...mediums].sort((a, b) => {
-            if (field === 'id') {
-                return order === 'asc' ? a.id - b.id : b.id - a.id;
-            } else {
-                const nameA = a[field].toLowerCase();
-                const nameB = b[field].toLowerCase();
-                if (nameA < nameB) return order === 'asc' ? -1 : 1;
-                if (nameA > nameB) return order === 'asc' ? 1 : -1;
-                return 0;
-            }
-        });
-        setMediums(sortedMediums);
-    }
+    //not used 
+    // function handleSort(field) {
+    //     const order = sortBy.field === field && sortBy.order === 'asc' ? 'desc' : 'asc';
+    //     setSortBy({ field, order });
+    //     const sortedMediums = [...mediums].sort((a, b) => {
+    //         if (field === 'id') {
+    //             return order === 'asc' ? a.id - b.id : b.id - a.id;
+    //         } else {
+    //             const nameA = a[field].toLowerCase();
+    //             const nameB = b[field].toLowerCase();
+    //             if (nameA < nameB) return order === 'asc' ? -1 : 1;
+    //             if (nameA > nameB) return order === 'asc' ? 1 : -1;
+    //             return 0;
+    //         }
+    //     });
+    //     setMediums(sortedMediums);
+    // }
 
     function handleUpdateMedium() {
         updateMedium(currentMediumId, currentMediumName, currentMediumBoardId);
@@ -353,17 +354,17 @@ function MediumForm({ reloadKey, onMediumChange }) {
                             <th className="border-b p-2 text-left">
                                 <div className="flex items-center">
                                     Medium ID
-                                    <button onClick={() => handleSort('id')} className="ml-1">
+                                    {/* <button onClick={() => handleSort('id')} className="ml-1">
                                         {sortBy.field === 'id' ? (sortBy.order === 'asc' ? <FaSortUp /> : <FaSortDown />) : <FaSort />}
-                                    </button>
+                                    </button> */}
                                 </div>
                             </th>
                             <th className="border-b p-2 text-left">
                                 <div className="flex items-center">
                                     Medium Name
-                                    <button onClick={() => handleSort('name')} className="ml-1">
+                                    {/* <button onClick={() => handleSort('name')} className="ml-1">
                                         {sortBy.field === 'name' ? (sortBy.order === 'asc' ? <FaSortUp /> : <FaSortDown />) : <FaSort />}
-                                    </button>
+                                    </button> */}
                                 </div>
                             </th>
                             {/* <th className="border-b p-2 text-left">Board ID</th> */}

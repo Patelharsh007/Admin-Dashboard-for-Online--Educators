@@ -206,25 +206,23 @@ function StandardForm({ reloadKey, onStandardChange }) {
         }, 5000);
     }
 
-
-    function handleSort(field) {
-        const order = sortBy.field === field && sortBy.order === 'asc' ? 'desc' : 'asc';
-        setSortBy({ field, order });
-        const sortedStandards = [...standards].sort((a, b) => {
-            if (field === 'id' || field === 'standard' || field === 'name') {
-                // Numeric sort for 'id', 'standard', and 'name' fields
-                const valueA = parseFloat(a[field]);
-                const valueB = parseFloat(b[field]);
-                return order === 'asc' ? valueA - valueB : valueB - valueA;
-            } else {
-                // Maintain original order for other fields
-                return 0;
-            }
-        });
-        setStandards(sortedStandards);
-    }
-
-
+    //Not-used
+    // function handleSort(field) {
+    //     const order = sortBy.field === field && sortBy.order === 'asc' ? 'desc' : 'asc';
+    //     setSortBy({ field, order });
+    //     const sortedStandards = [...standards].sort((a, b) => {
+    //         if (field === 'id' || field === 'standard' || field === 'name') {
+    //             // Numeric sort for 'id', 'standard', and 'name' fields
+    //             const valueA = parseFloat(a[field]);
+    //             const valueB = parseFloat(b[field]);
+    //             return order === 'asc' ? valueA - valueB : valueB - valueA;
+    //         } else {
+    //             // Maintain original order for other fields
+    //             return 0;
+    //         }
+    //     });
+    //     setStandards(sortedStandards);
+    // }
 
     function handleUpdateStandard() {
         updateStandard(currentStandardId, currentStandardName, currentMediumId);
@@ -459,17 +457,17 @@ function StandardForm({ reloadKey, onStandardChange }) {
                             <th className="border-b p-2 text-left">
                                 <div className="flex items-center">
                                     Standard ID
-                                    <button onClick={() => handleSort('id')} className="ml-1">
+                                    {/* <button onClick={() => handleSort('id')} className="ml-1">
                                         {sortBy.field === 'id' ? (sortBy.order === 'asc' ? <FaSortUp /> : <FaSortDown />) : <FaSort />}
-                                    </button>
+                                    </button> */}
                                 </div>
                             </th>
                             <th className="border-b p-2 text-left">
                                 <div className="flex items-center">
                                     Standard Name
-                                    <button onClick={() => handleSort('name')} className="ml-1">
+                                    {/* <button onClick={() => handleSort('name')} className="ml-1">
                                         {sortBy.field === 'name' ? (sortBy.order === 'asc' ? <FaSortUp /> : <FaSortDown />) : <FaSort />}
-                                    </button>
+                                    </button> */}
                                 </div>
                             </th>
                             <th className="border-b p-2 text-left">Medium Name</th>
